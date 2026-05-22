@@ -808,267 +808,6 @@ body {
   place-items: center;
 }
 
-.cafe-photo .placeholder-stripes {
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(135deg,
-      rgba(255, 255, 255, 0.18) 0 24px,
-      transparent 24px 48px);
-}
-
-.cafe-photo .placeholder-label {
-  position: relative;
-  background: var(--crema);
-  border: 2px solid var(--tinta);
-  border-radius: var(--r-pill);
-  padding: 10px 18px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-
-.cafe-photo img {
-  position: relative;
-  max-width: 70%;
-  max-height: 90%;
-}
-
-/* === APP / DESCARGAR === */
-.app-section {
-  background: var(--lima);
-  border-top: 3px solid var(--tinta);
-  border-bottom: 3px solid var(--tinta);
-}
-
-.app-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.1fr;
-  gap: 48px;
-  align-items: center;
-}
-
-.app-section .section-header h2 {
-  font-size: clamp(48px, 6.5vw, 96px);
-}
-
-.app-section .eyebrow {
-  color: var(--magenta);
-}
-
-.app-features {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin: 32px 0;
-}
-
-.app-features .f {
-  background: var(--tinta);
-  color: white;
-  border-radius: var(--r-md);
-  padding: 16px 18px;
-  font-size: 15px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.app-features .f .ico {
-  width: 30px;
-  height: 30px;
-  background: var(--magenta);
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-
-.store-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.store-btn {
-  background: var(--tinta);
-  color: white;
-  text-decoration: none;
-  border-radius: var(--r-md);
-  padding: 12px 22px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 2px solid var(--tinta);
-  font-family: inherit;
-  transition: transform .15s ease;
-}
-
-.store-btn:hover {
-  transform: translateY(-2px);
-}
-
-.store-btn .ico {
-  width: 28px;
-  height: 28px;
-  flex-shrink: 0;
-}
-
-.store-btn .lbl {
-  font-size: 11px;
-  opacity: 0.7;
-  line-height: 1;
-}
-
-.store-btn .name {
-  font-size: 17px;
-  font-weight: 700;
-  line-height: 1.1;
-}
-
-/* phone mockup */
-.phone-wrap {
-  display: grid;
-  place-items: center;
-  position: relative;
-}
-
-.phone {
-  width: 320px;
-  height: 660px;
-  background: var(--tinta);
-  border-radius: 52px;
-  border: 4px solid var(--tinta);
-  padding: 14px;
-  box-shadow: var(--shadow-soft);
-  position: relative;
-  rotate: -4deg;
-}
-
-.phone-screen {
-  background: var(--crema);
-  border-radius: 38px;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-}
-
-.phone-notch {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 110px;
-  height: 26px;
-  background: var(--tinta);
-  border-radius: 0 0 18px 18px;
-  z-index: 5;
-}
-
-.phone-status {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 24px 0;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.phone-content {
-  padding: 32px 22px 22px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.phone-greeting {
-  font-size: 12px;
-  color: var(--tinta-soft);
-  font-family: "JetBrains Mono", monospace;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.phone-title {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  margin: 0;
-}
-
-.phone-machines {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-
-.phone-machine {
-  background: var(--crema-2);
-  border: 2px solid var(--tinta);
-  border-radius: 16px;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 11px;
-}
-
-.phone-machine.busy {
-  background: var(--magenta);
-  color: white;
-}
-
-.phone-machine.free {
-  background: var(--lima);
-}
-
-.phone-machine .mid {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-weight: 800;
-  font-size: 18px;
-  line-height: 1;
-}
-
-.phone-machine .stat {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: 700;
-}
-
-.phone-machine .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-
-.phone-machine.busy .dot {
-  background: var(--lima);
-}
-
-.phone-machine.free .dot {
-  background: var(--azul);
-}
-
-.phone-cta {
-  margin-top: auto;
-  background: var(--magenta);
-  color: white;
-  border: 2px solid var(--tinta);
-  border-radius: 18px;
-  padding: 14px;
-  text-align: center;
-  font-weight: 700;
-  font-size: 15px;
-}
 
 /* === UBICACION === */
 .ubicacion-section {
@@ -1586,7 +1325,6 @@ body {
 
   .hero-grid,
   .cafe-grid,
-  .app-grid,
   .ubi-grid,
   .faq-grid {
     grid-template-columns: 1fr;
@@ -1662,25 +1400,12 @@ body {
     gap: 8px;
   }
 
-  .app-features {
-    grid-template-columns: 1fr;
-  }
-
-  .store-buttons {
-    flex-direction: column;
-  }
-
   .faq-item summary {
     font-size: 17px;
   }
 
   .faq-grid img {
     display: none;
-  }
-
-  .phone {
-    width: 270px;
-    height: 560px;
   }
 
   .step {
@@ -1799,14 +1524,6 @@ body {
     font-size: 40px;
   }
 
-  .phone-wrap {
-    padding: 16px 0;
-  }
-
-  .phone {
-    rotate: 0deg;
-  }
-
   .map-card {
     min-height: 260px;
   }
@@ -1821,10 +1538,6 @@ body {
 
   .tarifa .price {
     font-size: 48px;
-  }
-
-  .store-btn {
-    padding: 10px 16px;
   }
 
   .mobile-menu a {

@@ -501,11 +501,7 @@ function PausaSection() {
       <div className="container">
         <div className="cafe-grid">
           <div className="cafe-photo">
-            <div className="placeholder-stripes"></div>
-            <img src="assets/mascota-burbuja.png" alt="" style={{ position: 'relative' }} />
-            <div className="placeholder-label" style={{ position: 'absolute', bottom: 24, left: 24 }}>
-              {t.photoLabel}
-            </div>
+            <img src="assets/lavando_local.png" alt="Lavando · Local Rosario" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div className="cafe-card">
             <div className="eyebrow" style={{ color: 'var(--lima)' }}>◉ {t.eyebrow.replace('◉ ','')}</div>

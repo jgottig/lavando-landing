@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Lavando · Estado de Máquinas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+/* ==============================
+   VARIABLES & RESET
+============================== */
+:root {
+  --tinta:    #14132B;
+  --tinta-2:  #1C1A38;
+  --tinta-3:  #252345;
+  --crema:    #FBF7F4;
+  --magenta:  #EB038A;
+  --azul:     #0767B0;
+  --celeste:  #64ABDB;
+  --lima:     #90C63C;
+  --turquesa: #04A7AD;
+
+  /* High-contrast TV colors */
+  --c-free:    #7FD43A;
+  --c-washer:  #2196F3;
+  --c-dryer:   #FF2080;
+  --c-finish:  #00D8E0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+  background: var(--tinta);
+  color: var(--crema);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ==============================
+   DRUM SPIN ANIMATION
+============================== */
+@keyframes spin-cw {
+  to { transform: rotate(360deg); }
+}
+@keyframes spin-fast {
+  to { transform: rotate(360deg); }
+}
+.drum-spin      { animation: spin-cw   3.2s linear infinite; transform-origin: 0 0; }
+.drum-spin-fast { animation: spin-fast 1.6s linear infinite; transform-origin: 0 0; }
+
+@keyframes card-pulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,216,224,.0); }
+  50%      { box-shadow: 0 0 0 6px rgba(0,216,224,.3); }
+}
+@keyframes pulse-live {
+  0%,100% { box-shadow: 0 0 0 0 rgba(144,198,60,.5); }
+  50%      { box-shadow: 0 0 0 8px rgba(144,198,60,.0); }
+}
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .25; }
+}
+@keyframes progress-stripe {
+  to { background-position: 30px 0; }
+}
+
+/* ==============================
+   SCREEN LAYOUT
+============================== */
+.screen {
+  display: grid;
+  grid-template-rows: 70px 1fr;
+  height: 100vh;
+  width: 100vw;
+}
+
+.body {
+  display: grid;
+  grid-template-columns: 1fr 390px;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ==============================
+   HEADER
+============================== */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 2px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.025);
+  flex-shrink: 0;
+}
+
+.header-logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.header-logo img { height: 36px; width: auto; display: block; }
+
+.h-sep {
+  width: 2px; height: 24px;
+  background: rgba(255,255,255,.14);
+  border-radius: 2px;
+}
+
+.header-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+}
+
+.header-live {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--c-free);
+}
+.live-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--c-free);
+  animation: pulse-live 1.6s ease-in-out infinite;
+}
+
+.header-clock {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 36px;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  color: var(--crema);
+  min-width: 110px;
+  text-align: right;
+}
+
+/* ==============================
+   MACHINES PANEL
+============================== */
+.machines-panel {
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 14px;
+  min-height: 0;
+}
+
+/* ==============================
+   MACHINE CARD
+============================== */
+.card {
+  border-radius: 22px;
+  border: 2.5px solid rgba(255,255,255,.1);
+  padding: 16px 20px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .5s ease;
+  background: var(--tinta-2);
+}
+
+/* State theming */
+.card.free     { border-color: rgba(127,212,58,.5);  background: linear-gradient(145deg, rgba(127,212,58,.1), var(--tinta-2)); }
+.card.busy-w   { border-color: rgba(33,150,243,.5);  background: linear-gradient(145deg, rgba(33,150,243,.1), var(--tinta-2)); }
+.card.busy-d   { border-color: rgba(255,32,128,.5);  background: linear-gradient(145deg, rgba(255,32,128,.1), var(--tinta-2)); }
+.card.finishing {
+  border-color: rgba(0,216,224,.65);
+  background: linear-gradient(145deg, rgba(0,216,224,.12), var(--tinta-2));
+  animation: card-pulse 1.4s ease-in-out infinite;
+}
+
+/* Subtle corner glow */
+.card::after {
+  content: '';
+  position: absolute;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  top: -50px; right: -50px;
+  pointer-events: none;
+  opacity: .07;
+}
+.free::after     { background: var(--c-free); }
+.busy-w::after   { background: var(--c-washer); }
+.busy-d::after   { background: var(--c-dryer); }
+.finishing::after { background: var(--c-finish); }
+
+/* ---- card top row ---- */
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.card-num {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  opacity: .9;
+}
+.free .card-num     { color: var(--c-free); }
+.busy-w .card-num   { color: var(--c-washer); }
+.busy-d .card-num   { color: var(--c-dryer); }
+.finishing .card-num { color: var(--c-finish); }
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1.5px solid;
+  line-height: 1;
+}
+.free .badge     { color: var(--c-free);   border-color: rgba(127,212,58,.5);  background: rgba(127,212,58,.12); }
+.busy-w .badge   { color: var(--c-washer); border-color: rgba(33,150,243,.5);  background: rgba(33,150,243,.12); }
+.busy-d .badge   { color: var(--c-dryer);  border-color: rgba(255,32,128,.5);  background: rgba(255,32,128,.12); }
+.finishing .badge { color: var(--c-finish); border-color: rgba(0,216,224,.5);  background: rgba(0,216,224,.12); }
+
+.bdot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.free .bdot     { background: var(--c-free); }
+.busy-w .bdot   { background: var(--c-washer); animation: blink 2s ease-in-out infinite; }
+.busy-d .bdot   { background: var(--c-dryer);  animation: blink 2s ease-in-out infinite; }
+.finishing .bdot { background: var(--c-finish); animation: blink .7s ease-in-out infinite; }
+
+/* ---- card center: icon + label ---- */
+.card-center {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-height: 0;
+}
+
+.mach-svg {
+  flex-shrink: 0;
+  width: 94px;
+  height: 104px;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,.5));
+}
+
+.card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.card-type {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.free .card-type     { color: var(--c-free); }
+.busy-w .card-type   { color: var(--c-washer); }
+.busy-d .card-type   { color: var(--c-dryer); }
+.finishing .card-type { color: var(--c-finish); }
+
+/* Free sub */
+.free-available {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-free);
+  opacity: .7;
+  margin-top: 6px;
+}
+
+/* Busy: timer */
+.time-big {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: .9;
+  margin-top: 4px;
+}
+.busy-w .time-big   { color: var(--c-washer); }
+.busy-d .time-big   { color: var(--c-dryer); }
+.finishing .time-big { color: var(--c-finish); }
+
+.time-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .45;
+  margin-top: 3px;
+}
+
+/* Progress bar */
+.bar-wrap {
+  margin-top: 8px;
+}
+.bar-track {
+  height: 9px;
+  background: rgba(255,255,255,.1);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 1s linear;
+  position: relative;
+}
+/* Stripe shimmer when active */
+.bar-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,.0) 0,
+    rgba(255,255,255,.0) 10px,
+    rgba(255,255,255,.12) 10px,
+    rgba(255,255,255,.12) 20px
+  );
+  background-size: 30px 100%;
+  animation: progress-stripe 1.2s linear infinite;
+}
+.busy-w .bar-fill   { background: var(--c-washer); }
+.busy-d .bar-fill   { background: var(--c-dryer); }
+.finishing .bar-fill { background: var(--c-finish); }
+
+.bar-pct {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  opacity: .38;
+  letter-spacing: .06em;
+}
+
+/* Free big check */
+.free-check {
+  font-size: 44px;
+  line-height: 1;
+  margin-top: 6px;
+}
+
+/* ==============================
+   MEDIA PANEL
+============================== */
+.media-panel {
+  border-left: 2px solid rgba(255,255,255,.06);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.slide-prog-bar {
+  height: 3px;
+  background: rgba(255,255,255,.08);
+  flex-shrink: 0;
+  position: relative;
+}
+.slide-prog-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--c-free);
+  width: 0%;
+}
+
+.media-area {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: var(--tinta-3);
+  min-height: 0;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 28px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .75s ease;
+  pointer-events: none;
+}
+.slide.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.slide img, .slide video {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+}
+
+.slide-inner { position: relative; z-index: 2; }
+
+.s-icon  { font-size: 52px; line-height: 1; margin-bottom: 14px; }
+.s-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  opacity: .6;
+  margin-bottom: 10px;
+}
+.s-title {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 44px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: .92;
+  margin-bottom: 14px;
+}
+.s-body {
+  font-size: 14px;
+  opacity: .78;
+  line-height: 1.55;
+  max-width: 270px;
+  margin: 0 auto;
+}
+
+.slide-magenta { background: var(--magenta); }
+.slide-azul    { background: var(--azul); }
+.slide-dark    { background: #1C1A38; }
+.slide-lima    { background: #1C2D0A; }
+
+.media-dots {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+  padding: 8px;
+  flex-shrink: 0;
+  background: rgba(0,0,0,.3);
+}
+.mdot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
+  transition: background .3s, transform .3s;
+}
+.mdot.active { background: var(--c-free); transform: scale(1.5); }
+
+.media-footer {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  border-top: 1.5px solid rgba(255,255,255,.06);
+  background: rgba(0,0,0,.22);
+}
+.footer-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  opacity: .32;
+  margin-bottom: 10px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+.fstat-val {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.fstat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  opacity: .38;
+  margin-top: 2px;
+}
+
+/* ==============================
+   OFFLINE / ERROR / FUERA DE SERVICIO
+============================== */
+.card.offline, .card.error {
+  border-color: rgba(255,255,255,.12);
+  background: var(--tinta-2);
+  opacity: .5;
+}
+.card.error { border-color: rgba(255,80,80,.3); opacity: .6; }
+
+.offline .card-num, .error .card-num { color: rgba(255,255,255,.35); }
+.error .card-num { color: rgba(255,100,100,.6); }
+.offline .badge, .error .badge {
+  color: rgba(255,255,255,.4);
+  border-color: rgba(255,255,255,.2);
+  background: rgba(255,255,255,.05);
+}
+.error .badge { color: rgba(255,100,100,.7); border-color: rgba(255,80,80,.3); }
+.offline .bdot, .error .bdot { background: rgba(255,255,255,.3); }
+.error .bdot   { background: rgba(255,100,100,.7); }
+.offline .card-type, .error .card-type { color: rgba(255,255,255,.4); }
+.offline-msg {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.3);
+  margin-top: 8px;
+}
+
+/* ==============================
+   CICLO ID
+============================== */
+.ciclo-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: .1em;
+  opacity: .38;
+  margin-top: 1px;
+}
+
+/* ==============================
+   SUB-CICLOS / ETAPAS
+============================== */
+.subcycles {
+  display: flex;
+  gap: 3px;
+  margin-top: 9px;
+}
+.sc {
+  flex: 1;
+  height: 5px;
+  border-radius: 2px;
+  background: rgba(255,255,255,.1);
+  position: relative;
+  overflow: hidden;
+  min-width: 4px;
+}
+.sc-fill {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  border-radius: 2px;
+  transition: width .8s linear;
+}
+/* Color del sub-ciclo según estado de tarjeta */
+.busy-w   .subcycles { --sc-col: var(--c-washer); }
+.busy-d   .subcycles { --sc-col: var(--c-dryer); }
+.finishing .subcycles { --sc-col: var(--c-finish); }
+.sc.done            { background: var(--sc-col); opacity: .7; }
+.sc.done-full       { background: var(--sc-col); opacity: .85; }
+.sc-fill            { background: var(--sc-col); opacity: .9; }
+
+.sc-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  opacity: .32;
+  letter-spacing: .07em;
+  margin-top: 4px;
+}
+
+/* ==============================
+   API STATUS INDICATOR
+============================== */
+.api-status {
+  position: fixed;
+  bottom: 12px;
+  left: 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .3;
+  color: var(--crema);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.api-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--c-free);
+}
+.api-dot.err { background: #FF4444; }
+</style>
+</head>
+<body>
+
+<div class="screen">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-logo">
+      <img src="assets/logo-lavando.jpeg" alt="Lavando" />
+      <div class="h-sep"></div>
+      <div class="header-subtitle">Estado de Máquinas</div>
+    </div>
+    <div class="header-live">
+      <div class="live-dot"></div>
+      En vivo · Zeballos 1530
+    </div>
+    <div class="header-clock" id="clock">00:00</div>
+  </header>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- MACHINES -->
+    <div class="machines-panel" id="machines-panel"></div>
+
+    <!-- MEDIA -->
+    <div class="media-panel">
+      <div class="slide-prog-bar">
+        <div class="slide-prog-fill" id="slide-fill"></div>
+      </div>
+      <div class="media-area" id="media-area"></div>
+      <div class="media-dots" id="media-dots"></div>
+      <div class="media-footer">
+        <div class="footer-label">Resumen del local</div>
+        <div class="footer-grid">
+          <div>
+            <div class="fstat-val" id="s-free"  style="color:var(--c-free)">–</div>
+            <div class="fstat-lbl">Disponibles</div>
+          </div>
+          <div>
+            <div class="fstat-val" id="s-busy"  style="color:var(--c-dryer)">–</div>
+            <div class="fstat-lbl">En uso</div>
+          </div>
+          <div>
+            <div class="fstat-val" id="s-wash"  style="color:var(--c-washer)">–</div>
+            <div class="fstat-lbl">Lavadoras</div>
+          </div>
+          <div>
+            <div class="fstat-val" id="s-dry"   style="color:var(--c-dryer)">–</div>
+            <div class="fstat-lbl">Secadoras</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- API status indicator (bottom-left, subtle) -->
+<div class="api-status" id="api-status">
+  <div class="api-dot" id="api-dot"></div>
+  <span id="api-label">conectando…</span>
+</div>
+
+<script>
+// =============================================================
+//  SVG GENERATORS
+//  Both machines share the same front-load shape.
+//  Washer: drum spokes + water fill hint
+//  Dryer:  drum spokes + vent slots on right + heat waves
+// =============================================================
+
+function washerSVG(color, spinning) {
+  const sc = spinning ? 'drum-spin' : '';
+  return `<svg class="mach-svg" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Body -->
+    <rect x="3" y="3" width="94" height="104" rx="12" fill="#0E0D22"/>
+    <rect x="3" y="3" width="94" height="104" rx="12" stroke="${color}" stroke-width="2.5"/>
+    <!-- Top control strip -->
+    <rect x="10" y="10" width="80" height="17" rx="5" fill="rgba(255,255,255,0.06)"/>
+    <!-- LED indicator -->
+    <circle cx="74" cy="18.5" r="4.5" fill="${color}" opacity="0.9"/>
+    <circle cx="74" cy="18.5" r="2"   fill="white" opacity="0.75"/>
+    <!-- Dial knob -->
+    <circle cx="61" cy="18.5" r="5"   fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+    <line   x1="61" y1="13.5" x2="61" y2="17" stroke="rgba(255,255,255,0.45)" stroke-width="1.5" stroke-linecap="round"/>
+    <!-- Door outer ring -->
+    <circle cx="50" cy="66" r="32" fill="rgba(0,0,0,0.4)"/>
+    <circle cx="50" cy="66" r="32" stroke="${color}" stroke-width="3"/>
+    <!-- Seal ring -->
+    <circle cx="50" cy="66" r="27" stroke="${color}" stroke-width="1" opacity="0.35"/>
+    <!-- Door glass -->
+    <circle cx="50" cy="66" r="25" fill="#08071A"/>
+    <!-- Spinning drum: 3 paddles (spokes) -->
+    <g transform="translate(50,66)">
+      <g class="${sc}">
+        <line x1="0" y1="-22" x2="0" y2="0"   stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+        <line x1="0" y1="0" x2="19.05" y2="11"  stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+        <line x1="0" y1="0" x2="-19.05" y2="11" stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+      </g>
+    </g>
+    <!-- Hub -->
+    <circle cx="50" cy="66" r="6"   fill="${color}"/>
+    <circle cx="50" cy="66" r="2.5" fill="white" opacity="0.65"/>
+    <!-- Water tint at bottom (always on) -->
+    <path d="M27 74 Q50 80 73 74 L73 91 Q50 87 27 91 Z" fill="${color}" opacity="0.1"/>
+    <!-- Glass sheen -->
+    <ellipse cx="40" cy="57" rx="8" ry="5" fill="white" opacity="0.05" transform="rotate(-20,40,57)"/>
+  </svg>`;
+}
+
+function dryerSVG(color, spinning) {
+  const sc = spinning ? 'drum-spin' : '';
+  return `<svg class="mach-svg" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Body -->
+    <rect x="3" y="3" width="94" height="104" rx="12" fill="#0E0D22"/>
+    <rect x="3" y="3" width="94" height="104" rx="12" stroke="${color}" stroke-width="2.5"/>
+    <!-- Top strip -->
+    <rect x="10" y="10" width="80" height="17" rx="5" fill="rgba(255,255,255,0.06)"/>
+    <!-- LED -->
+    <circle cx="74" cy="18.5" r="4.5" fill="${color}" opacity="0.9"/>
+    <circle cx="74" cy="18.5" r="2"   fill="white" opacity="0.75"/>
+    <!-- Temp selector bar -->
+    <rect x="13" y="13" width="34" height="11" rx="3.5" fill="rgba(255,255,255,0.08)"/>
+    <rect x="13" y="13" width="13" height="11" rx="3.5" fill="${color}" opacity="0.4"/>
+    <!-- Vent slots (right side) -->
+    <rect x="84" y="34" width="9" height="2.5" rx="1.25" fill="${color}" opacity="0.45"/>
+    <rect x="84" y="41" width="9" height="2.5" rx="1.25" fill="${color}" opacity="0.45"/>
+    <rect x="84" y="48" width="9" height="2.5" rx="1.25" fill="${color}" opacity="0.45"/>
+    <rect x="84" y="55" width="9" height="2.5" rx="1.25" fill="${color}" opacity="0.45"/>
+    <rect x="84" y="62" width="9" height="2.5" rx="1.25" fill="${color}" opacity="0.45"/>
+    <!-- Door outer ring -->
+    <circle cx="47" cy="66" r="32" fill="rgba(0,0,0,0.4)"/>
+    <circle cx="47" cy="66" r="32" stroke="${color}" stroke-width="3"/>
+    <circle cx="47" cy="66" r="27" stroke="${color}" stroke-width="1" opacity="0.35"/>
+    <!-- Door glass -->
+    <circle cx="47" cy="66" r="25" fill="#08071A"/>
+    <!-- Spinning drum -->
+    <g transform="translate(47,66)">
+      <g class="${sc}">
+        <line x1="0" y1="-22" x2="0" y2="0"   stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+        <line x1="0" y1="0" x2="19.05" y2="11"  stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+        <line x1="0" y1="0" x2="-19.05" y2="11" stroke="${color}" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+      </g>
+    </g>
+    <!-- Hub -->
+    <circle cx="47" cy="66" r="6"   fill="${color}"/>
+    <circle cx="47" cy="66" r="2.5" fill="white" opacity="0.65"/>
+    <!-- Heat waves (when spinning) -->
+    ${spinning ? `
+    <g opacity="0.5">
+      <path d="M18 97 Q21 93 24 97 Q27 101 30 97" stroke="${color}" stroke-width="2" stroke-linecap="round" fill="none">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M31 97 Q34 93 37 97 Q40 101 43 97" stroke="${color}" stroke-width="2" stroke-linecap="round" fill="none">
+        <animate attributeName="opacity" values="0.7;0.25;0.7" dur="1.4s" repeatCount="indefinite"/>
+      </path>
+      <path d="M44 97 Q47 93 50 97 Q53 101 56 97" stroke="${color}" stroke-width="2" stroke-linecap="round" fill="none">
+        <animate attributeName="opacity" values="0.3;0.8;0.3" dur="1.6s" repeatCount="indefinite"/>
+      </path>
+    </g>` : ''}
+    <!-- Sheen -->
+    <ellipse cx="37" cy="57" rx="8" ry="5" fill="white" opacity="0.05" transform="rotate(-20,37,57)"/>
+  </svg>`;
+}
+
+// =============================================================
+//  API CONFIG
+// =============================================================
+const API_URL  = 'https://curavdphpnzbnxpkqatr.supabase.co/functions/v1/api-apptv?recurso=status_maquinas';
+const API_KEY  = 'lavapptv2025';
+const POLL_MS  = 5000;  // refresh desde API cada 5 segundos
+const TICK_MS  = 1000;  // countdown local cada 1 segundo
+
+// Estado inicial: 6 placeholders vacíos ordenados por idMaqLoc
+let machines = Array.from({ length: 6 }, (_, i) => ({
+  idMaqLoc: i + 1,
+  type:     'washer',
+  label:    '–',
+  status:   'offline',
+  elapsed:  null,
+  dur:      null,
+}));
+
+// =============================================================
+//  PARSER — convierte un item del array dados[] en estado interno
+//
+//  Status: 1=Disponible  2=En Uso  0=Indisponible  -1=Error
+//  MinReal: minutos REALES transcurridos (solo válido en Status=2)
+//  EtapaCiclo / CtdeEtapas: etapa actual / total de etapas
+// =============================================================
+function parseMachine(d) {
+  const loc   = d.idMaqLoc;
+  const type  = d.TipoMaquina.toLowerCase().includes('lavadora') ? 'washer' : 'dryer';
+  const label = d.TipoMaquina;
+  const base  = { idMaqLoc: loc, type, label, idCiclo: d.idCiclo };
+
+  // Coerción explícita: el API puede devolver StatusFinal como número o string
+  const st = Number(d.StatusFinal);
+
+  if (st === -1) return { ...base, status: 'error',   elapsed: null, dur: null };
+  if (st ===  0) return { ...base, status: 'offline', elapsed: null, dur: null };
+  if (st ===  1) return { ...base, status: 'free',    elapsed: null, dur: null };
+
+  // st === 2: En Uso
+  // MinReal = minutos reales transcurridos del ciclo en curso
+  const durSec     = (d.TiempoEstMin || 0) * 60;
+  const elapsedSec = durSec > 0
+    ? Math.min(Math.floor((d.MinReal || 0) * 60), durSec)
+    : Math.floor((d.MinReal || 0) * 60);
+
+  return {
+    ...base,
+    status:       'busy',
+    elapsed:      elapsedSec,
+    dur:          durSec || 3600,  // fallback 60 min si no hay TiempoEstMin
+    etapa:        d.EtapaCiclo    || 1,
+    totalEtapas:  d.CtdeEtapas   || 1,
+    tiempoEstMin: d.TiempoEstMin  || 60,
+  };
+}
+
+// =============================================================
+//  FETCH — consulta la API y actualiza el estado
+// =============================================================
+async function fetchMachines() {
+  try {
+    const res = await fetch(API_URL, {
+      method: 'GET',
+      headers: { 'x-api-key': API_KEY }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+
+    if (json.sucesso && Array.isArray(json.dados)) {
+      // Construir mapa por idMaqLoc
+      const map = {};
+      json.dados.forEach(d => { map[d.idMaqLoc] = d; });
+
+      // Mantener orden 1-6; si una máquina no aparece en la API → offline
+      machines = Array.from({ length: 6 }, (_, i) => {
+        const loc = i + 1;
+        return map[loc] ? parseMachine(map[loc]) : {
+          idMaqLoc: loc, type: 'washer', label: '–', status: 'offline', elapsed: null, dur: null
+        };
+      });
+
+      setApiStatus(true, json.atualizado_em);
+      renderMachines();
+      renderSummary();
+    }
+  } catch (err) {
+    console.error('[Lavando API]', err);
+    setApiStatus(false);
+    // Mantener el último estado visible sin borrarlo
+  }
+}
+
+// =============================================================
+//  LOCAL TICK — countdown suave entre polls de la API
+// =============================================================
+function localTick() {
+  let changed = false;
+  machines = machines.map(m => {
+    if (m.status !== 'busy') return m;
+    const next = Math.min(m.elapsed + 1, m.dur);
+    if (next === m.elapsed) return m; // ya en el tope, sin cambio
+    changed = true;
+    return { ...m, elapsed: next };
+    // Nunca cambiamos a 'free' localmente: solo la API decide eso.
+    // Cuando elapsed == dur el contador muestra 0 min / TERMINANDO
+    // y se estabiliza hasta que el próximo poll confirme el cambio.
+  });
+  if (changed) {
+    renderMachines();
+    renderSummary();
+  }
+}
+
+// =============================================================
+//  CARD RENDERER
+// =============================================================
+const HEX = {
+  free:     '#7FD43A',
+  'busy-w': '#2196F3',
+  'busy-d': '#FF2080',
+  finishing:'#00D8E0',
+  offline:  '#4A4870',
+  error:    '#FF5050',
+};
+
+function stateClass(m) {
+  if (m.status === 'offline') return 'offline';
+  if (m.status === 'error')   return 'error';
+  if (m.status === 'free')    return 'free';
+  if (m.status === 'busy') {
+    if (m.dur - m.elapsed <= 120) return 'finishing';
+    return m.type === 'washer' ? 'busy-w' : 'busy-d';
+  }
+  return 'offline';
+}
+
+// =============================================================
+//  SUB-CICLOS — segmentos de etapas con progreso interno
+// =============================================================
+function renderSubcycles(m) {
+  if (!m.totalEtapas || m.totalEtapas < 2 || !m.tiempoEstMin) return '';
+
+  const minPerStage    = m.tiempoEstMin / m.totalEtapas;
+  const elapsedMin     = m.elapsed / 60;
+  // Etapas completadas antes de la actual (basado en tiempo local)
+  const stagesDone     = Math.min(m.etapa - 1, Math.floor(elapsedMin / minPerStage));
+  // Progreso dentro de la etapa actual
+  const timeInCurrent  = Math.max(0, elapsedMin - stagesDone * minPerStage);
+  const stagePct       = Math.min(100, Math.round((timeInCurrent / minPerStage) * 100));
+
+  const segs = Array.from({ length: m.totalEtapas }, (_, i) => {
+    const n = i + 1;
+    if (n < m.etapa) {
+      // Etapa completada (según API)
+      return `<div class="sc done-full"></div>`;
+    } else if (n === m.etapa) {
+      // Etapa actual: barra de progreso interno
+      return `<div class="sc"><div class="sc-fill" style="width:${stagePct}%"></div></div>`;
+    } else {
+      return `<div class="sc"></div>`;
+    }
+  }).join('');
+
+  return `<div class="subcycles">${segs}</div>
+    <div class="sc-label">Etapa ${m.etapa} de ${m.totalEtapas}</div>`;
+}
+
+function renderCard(m) {
+  const cls      = stateClass(m);
+  const hex      = HEX[cls] || HEX.offline;
+  const spinning = (m.status === 'busy');
+  const spinCls  = cls === 'finishing' ? 'drum-spin-fast' : spinning ? 'drum-spin' : '';
+
+  let svgStr = m.type === 'washer' ? washerSVG(hex, spinning) : dryerSVG(hex, spinning);
+  if (cls === 'finishing') svgStr = svgStr.replace(/drum-spin\b/g, 'drum-spin-fast');
+
+  let badgeLabel, infoHtml;
+
+  const cicloTag = m.idCiclo
+    ? `<div class="ciclo-id">Ciclo #${m.idCiclo}</div>`
+    : '';
+
+  if (m.status === 'offline') {
+    badgeLabel = 'NO DISPONIBLE';
+    infoHtml = `
+      <div class="card-type">${m.label || '–'}</div>
+      ${cicloTag}
+      <div class="offline-msg">⚠ Fuera de servicio</div>`;
+
+  } else if (m.status === 'error') {
+    badgeLabel = 'ERROR';
+    infoHtml = `
+      <div class="card-type">${m.label || '–'}</div>
+      ${cicloTag}
+      <div class="offline-msg" style="color:rgba(255,100,100,.6)">⚠ Error en máquina</div>`;
+
+  } else if (m.status === 'free') {
+    badgeLabel = 'DISPONIBLE';
+    infoHtml = `
+      <div class="card-type">${m.label}</div>
+      ${cicloTag}
+      <div class="free-available">◉ Disponible ahora</div>
+      <div class="free-check">✓</div>`;
+
+  } else {
+    badgeLabel = cls === 'finishing' ? 'TERMINANDO' : 'EN USO';
+    const secsLeft = m.dur - m.elapsed;
+    const minsLeft = Math.ceil(secsLeft / 60);
+    const pct      = Math.min(100, Math.round((m.elapsed / m.dur) * 100));
+    const subLabel = cls === 'finishing' ? '¡Casi lista!' : 'Min restantes';
+    infoHtml = `
+      <div class="card-type">${m.label}</div>
+      ${cicloTag}
+      <div class="time-big">${minsLeft}<span style="font-size:20px;opacity:.5"> min</span></div>
+      <div class="time-sub">${subLabel}</div>
+      <div class="bar-wrap">
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+        <div class="bar-pct">${pct}% completado</div>
+      </div>
+      ${renderSubcycles(m)}`;
+  }
+
+  return `
+    <div class="card ${cls}">
+      <div class="card-top">
+        <div class="card-num">Máquina ${m.idMaqLoc}</div>
+        <div class="badge"><div class="bdot"></div>${badgeLabel}</div>
+      </div>
+      <div class="card-center">
+        ${svgStr}
+        <div class="card-info">${infoHtml}</div>
+      </div>
+    </div>`;
+}
+
+function renderMachines() {
+  document.getElementById('machines-panel').innerHTML =
+    machines.map(renderCard).join('');
+}
+
+// =============================================================
+//  SUMMARY
+// =============================================================
+function renderSummary() {
+  const free = machines.filter(m => m.status === 'free').length;
+  const busy = machines.filter(m => m.status === 'busy').length;
+  const wash = machines.filter(m => m.type === 'washer' && m.status === 'busy').length;
+  const dry  = machines.filter(m => m.type === 'dryer'  && m.status === 'busy').length;
+  document.getElementById('s-free').textContent = free;
+  document.getElementById('s-busy').textContent = busy;
+  document.getElementById('s-wash').textContent = wash;
+  document.getElementById('s-dry').textContent  = dry;
+}
+
+// =============================================================
+//  API STATUS INDICATOR
+// =============================================================
+function setApiStatus(ok, ts) {
+  const dot   = document.getElementById('api-dot');
+  const label = document.getElementById('api-label');
+  dot.className = 'api-dot' + (ok ? '' : ' err');
+  if (ok && ts) {
+    const d = new Date(ts);
+    const hh = String(d.getHours()).padStart(2,'0');
+    const mm = String(d.getMinutes()).padStart(2,'0');
+    const ss = String(d.getSeconds()).padStart(2,'0');
+    label.textContent = `api ok · ${hh}:${mm}:${ss}`;
+  } else {
+    label.textContent = 'api sin conexión';
+  }
+}
+
+// =============================================================
+//  CLOCK
+// =============================================================
+function tickClock() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+
+// =============================================================
+//  SLIDES
+//  To add real media:
+//    { type: 'video', src: 'assets/media/promo.mp4' }
+//    { type: 'image', src: 'assets/media/foto.jpg' }
+// =============================================================
+const SLIDES = [
+  { cls: 'slide-magenta', icon: '🫧', label: 'Lavado profesional', title: 'Ropa limpia\nen minutos.', body: 'Detergente y suavizante incluidos en cada ciclo.' },
+  { cls: 'slide-azul',    icon: '💳', label: 'Pago digital',       title: 'Sin efectivo.\nSin vueltas.', body: 'MercadoPago, tarjeta de crédito, débito y billeteras digitales.' },
+  { cls: 'slide-dark',    icon: '❄️', label: 'Comodidad',          title: 'Esperá\nen calma.', body: 'Aire acondicionado y espacio cómodo mientras esperás.', titleColor: '#64ABDB' },
+  { cls: 'slide-lima',    icon: '🕐', label: 'Siempre abierto',    title: 'Las 24\nhoras.', body: 'Todos los días del año. Entrá cuando quieras.', titleColor: '#7FD43A' },
+  { cls: 'slide-magenta', icon: '📍', label: 'Encontranos',        title: 'Zeballos\n1530', body: 'Rosario, Santa Fe — en el corazón del centro.' },
+];
+const SLIDE_MS = 9000;
+let curSlide = 0;
+
+function buildSlides() {
+  const area = document.getElementById('media-area');
+  const dots = document.getElementById('media-dots');
+
+  area.innerHTML = SLIDES.map((s, i) => {
+    if (s.type === 'video') {
+      return `<div class="slide ${i===0?'active':''}"><video src="${s.src}" autoplay muted loop playsinline></video></div>`;
+    }
+    if (s.type === 'image') {
+      return `<div class="slide ${i===0?'active':''}"><img src="${s.src}" alt=""/></div>`;
+    }
+    const tc = s.titleColor ? `style="color:${s.titleColor}"` : '';
+    const t  = s.title.split('\n').join('<br>');
+    return `
+      <div class="slide ${s.cls} ${i===0?'active':''}">
+        <div class="slide-inner">
+          <div class="s-icon">${s.icon}</div>
+          <div class="s-label">${s.label}</div>
+          <div class="s-title" ${tc}>${t}</div>
+          <div class="s-body">${s.body}</div>
+        </div>
+      </div>`;
+  }).join('');
+
+  dots.innerHTML = SLIDES.map((_,i) =>
+    `<div class="mdot ${i===0?'active':''}"></div>`
+  ).join('');
+}
+
+function advanceSlide() {
+  const slides = document.querySelectorAll('.slide');
+  const dots   = document.querySelectorAll('.mdot');
+  slides[curSlide].classList.remove('active');
+  dots[curSlide].classList.remove('active');
+  curSlide = (curSlide + 1) % SLIDES.length;
+  slides[curSlide].classList.add('active');
+  dots[curSlide].classList.add('active');
+  startProgress();
+}
+
+function startProgress() {
+  const fill = document.getElementById('slide-fill');
+  fill.style.transition = 'none';
+  fill.style.width = '0%';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    fill.style.transition = `width ${SLIDE_MS}ms linear`;
+    fill.style.width = '100%';
+  }));
+}
+
+// =============================================================
+//  INIT
+// =============================================================
+function init() {
+  buildSlides();
+  renderMachines();   // muestra placeholders offline mientras carga
+  renderSummary();
+  tickClock();
+  startProgress();
+
+  // Primera carga inmediata, luego cada 5 segundos
+  fetchMachines();
+  setInterval(fetchMachines, POLL_MS);
+
+  // Countdown local cada 1 segundo
+  setInterval(localTick, TICK_MS);
+
+  // Reloj y slides
+  setInterval(tickClock, 1000);
+  setInterval(advanceSlide, SLIDE_MS);
+}
+
+init();
+</script>
+</body>
+</html>
