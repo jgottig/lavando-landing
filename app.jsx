@@ -4,209 +4,215 @@ const { useState, useEffect, createContext, useContext } = React;
 // ===== TRANSLATIONS =====
 const T = {
   es: {
-    nav: { how: 'Cómo funciona', pricing: 'Tarifas', location: 'Ubicación' },
+    nav: { how: 'Cómo funciona', pricing: 'Tarifas', location: 'Ubicación', franchise: 'Franquicia' },
     hero: {
       eyebrow: '◉ Lavandería automática · Rosario · 24 hs',
       line1pre: 'Tu ropa,', line1hi: 'limpia',
-      line2pre: 'en', line2hi: '30 minutos',
+      line2pre: 'en', line2hi: 'minutos',
       line3: 'Sin vueltas.',
-      lede: 'Reservá la máquina desde el celular, pagás con un toque y entrás cuando quieras. Lavado y secado en pleno centro de Rosario.',
+      lede: 'Vení cuando quieras, pagás con tarjeta o MercadoPago y tu ropa queda lista en minutos. Lavado y secado en pleno centro de Rosario.',
       cta1: 'Ver tarifas', cta2: 'Cómo funciona',
-      meta1: 'Abierto ahora · 7 máquinas libres',
-      meta2: '⏱ Lavado 30 min · Secado 25 min',
     },
-    marquee: ['ABIERTO 24/7','★','PAGO DIGITAL','★','ROSARIO CENTRO','★',"LAVADO EN 30'",'★','WI-FI','★','MÁQUINAS HE','★','DETERGENTE INCLUIDO','★'],
+    marquee: ['ABIERTO 24/7','★','PAGO DIGITAL','★','ROSARIO CENTRO','★','LAVADO RÁPIDO','★','WI-FI','★','MÁQUINAS INDUSTRIALES','★','DETERGENTE INCLUIDO','★'],
     como: {
       eyebrow: '◉ EN 3 PASOS · SIN VUELTAS',
       h2a: 'Tan fácil como', h2b: 'poner una', h2c: 'moneda.', h2d: 'Pero sin moneda.',
-      p: 'Todo desde tu celular. No hay fila, no hay efectivo, no hay esperar que alguien termine. Vos decidís cuándo.',
-      s1t: 'Elegís el servicio', s1p: 'Consultá disponibilidad, elegís lavado o secado y pagás con MercadoPago o tarjeta. Te llega un código al instante.',
+      p: 'Sin fila, sin efectivo, sin espera. Vos decidís cuándo venir.',
+      s1t: 'Elegís el servicio', s1p: 'Elegís lavado o secado, pagás con MercadoPago o tarjeta y te damos el código para arrancar al instante.',
       s2t: 'Cargás el lavarropas', s2p: 'Venís al local, ponés la ropa, ingresás tu código y la máquina arranca sola. Detergente y suavizante incluidos.',
-      s3t: 'Relajate', s3p: '30 minutos de lavado. Aire acondicionado y espacio cómodo disponible. Te avisamos cuando tu ropa está lista.',
+      s3t: 'Relajate', s3p: 'En minutos tu ropa queda lista. Aire acondicionado y espacio cómodo disponible.',
     },
     tarifas: {
       eyebrow: '◉ PRECIOS CLAROS · SIN SORPRESAS',
       h2: 'Tarifas que se entienden.', p: 'Pagás por máquina, no por kilo. Detergente y suavizante siempre incluidos.',
-      t1tag: 'Solo lavado', t1h: 'Lavarropas', t1li: ['30 minutos · Programa HE','Hasta 8 kilos','Detergente incluido'],
-      t2tag: '★ El más elegido', t2h: 'Lavado + secado', t2li: ['Lavado HE de 30 minutos','Secado de 25 minutos','Detergente y suavizante'],
+      t1tag: 'Solo lavado', t1h: 'Lavarropas', t1li: ['Programa','Por Canastos','Detergente incluido'],
+      t2tag: '★ El más elegido', t2h: 'Lavado + secado', t2li: ['Lavado','Secado completo','Detergente y suavizante'],
     },
     pausa: {
       eyebrow: '◉ MIENTRAS TANTO',
       h3a: 'No es solo', h3b: 'lavandería.', h3c: 'Es', h3d: 'tu pausa',
-      p: 'Esos 30 minutos son tuyos. Relajate, respondé mensajes, leé un rato. Cuando llegue el aviso, tu ropa ya está lista.',
+      p: 'Ese rato es tuyo. Relajate, respondé mensajes, leé un rato. Cuando tu ropa esté lista, te avisamos.',
       amenity: 'Aire acondicionado',
       photoLabel: 'FOTO · LAVANDERÍA',
     },
-    avail: {
-      eyebrow: '◉ DISPONIBILIDAD EN TIEMPO REAL',
-      h2: 'Sabés cuándo\nhay lugar.',
-      p: 'Consultá el estado de las máquinas antes de venir. Mirá cuáles están libres y planificá tu visita sin sorpresas.',
-      machinesLbl: 'Máquinas en vivo', live: '● EN VIVO', free: 'LIBRE', busy: 'OCUPADA',
-      phoneGreeting: '◉ ROSARIO · CENTRO', phoneTitle: 'Hola, Sofi 👋', phoneTitle2: '¿qué lavamos hoy?',
-    },
     ubi: {
       eyebrow: '◉ EN PLENO ROSARIO', h2a: 'Estamos a la vuelta', h2b: 'de tu casa.',
-      liveTag: 'EN VIVO · 7 LIBRES', corner: 'CÓRDOBA & MORENO · CENTRO',
+      liveTag: 'EN VIVO · CENTRO', corner: 'ZEBALLOS 1530 · CENTRO',
       h3a: 'Lavando', h3b: 'Rosario Centro',
-      dirLbl: 'Dirección', dirVal1: 'Córdoba 1234', dirVal2: 'Rosario, Santa Fe',
+      dirLbl: 'Dirección', dirVal1: 'Zeballos 1530', dirVal2: 'Rosario, Santa Fe',
       hoursLbl: 'Horario', hoursVal: '24 horas', hoursSub: 'Todos los días del año',
-      wsLbl: 'Whatsapp', wsVal: '+54 341 555 0123', btn: 'Cómo llegar →',
+      wsLbl: 'Whatsapp', wsVal: '+54 341 274-5374', btn: 'Cómo llegar →',
     },
     faq: {
       eyebrow: '◉ DUDAS FRECUENTES', h2a: 'Todo lo que querés', h2b: 'saber.',
       items: [
-        { q: '¿Tengo que llevar detergente?', a: 'No. El detergente, suavizante y todo lo necesario está incluido en el precio. Si tenés un producto preferido, también podés traer el tuyo.' },
-        { q: '¿Cuánta ropa entra en una máquina?', a: 'Hasta 8 kilos por máquina, lo que equivale más o menos a dos cargas comunes de un lavarropas hogareño. Suficiente para una semana de ropa de una persona o un acolchado de plaza y media.' },
-        { q: '¿Y si no estoy cuando termina el lavado?', a: 'Te avisamos cuando la ropa está lista. Si no llegás a tiempo, la ropa queda dentro hasta que vos vengas. Nadie la toca.' },
+        { q: '¿Tengo que llevar detergente?', a: 'No. El detergente, suavizante y todo lo necesario está incluido en el precio.' },
+        { q: '¿Cuánta ropa entra en una máquina?', a: 'La cantidad es por Canastos, para obtener un lavado preciso' },
+        { q: '¿Y si no estoy cuando termina el lavado?', a: 'La ropa queda dentro hasta que vos vengas. Nadie la toca.' },
         { q: '¿Cómo pago?', a: 'Con MercadoPago, tarjeta de crédito, débito o billeteras virtuales. Todo digital, no aceptamos efectivo.' },
-        { q: '¿Puedo lavar zapatillas o acolchados?', a: 'Sí. Las máquinas son industriales (HE) y soportan acolchados, mantas, almohadones y zapatillas.' },
-        { q: '¿Tienen servicio a domicilio?', a: 'Sí, en zona céntrica. Pasamos a buscar tu ropa, la lavamos y secamos, y te la llevamos doblada en el día.' },
+        { q: '¿Puedo lavar zapatillas o acolchados?', a: 'Sí. Las máquinas son industriales y soportan acolchados, mantas, almohadones, etc.' },
+        { q: '¿Tienen servicio a domicilio?', a: 'No por el momento, estamos evaluando incorporarlo a futuro.' },
       ],
     },
+    franquicia: {
+      eyebrow: '◉ OPORTUNIDAD DE NEGOCIO',
+      h2a: 'Sumá Lavando', h2b: 'a tu ciudad.',
+      p: 'Lavando es una lavandería automática self-service que funciona 24/7 sin personal fijo. Máquinas industriales, pago digital y un modelo probado que ya está en marcha en Rosario.',
+      cards: [
+        { stat: '24/7', title: 'Sin personal', desc: 'El local opera solo, sin empleados en turno.' },
+        { stat: '100%', title: 'Pago digital', desc: 'Sin manejo de efectivo ni cajas registradoras.' },
+        { stat: '✓', title: 'Modelo probado', desc: 'Tecnología, marca y soporte desde el primer día.' },
+      ],
+      btn: '💬 Contactanos para más información',
+    },
     footer: {
-      eyebrow: '◉ LAVANDO · ROSARIO', d1: 'Tu ropa,', d2: 'limpia', d3: "en 30'.",
+      eyebrow: '◉ LAVANDO · ROSARIO', d1: 'Tu ropa,', d2: 'limpia', d3: 'en minutos.',
       p: 'Lavandería automática 24 horas en pleno centro de Rosario. Máquinas que funcionan siempre.',
-      c1t: 'Servicios', c1: ['Lavado','Secado','Acolchados','Domicilio','Plancha'],
-      c2t: 'Ubicación', c2: ['Córdoba 1234','Rosario, Santa Fe','Abierto 24/7','Cómo llegar'],
-      c3t: 'Seguinos', c3: ['@lavando.ar','instagram.com/lavando.ar','www.lavando.ar','+54 341 555 0123'],
+      c1t: 'Servicios', c1: ['Lavado','Secado','Acolchados','Domicilio'],
+      c2t: 'Ubicación', c2: ['Zeballos 1530','Rosario, Santa Fe','Abierto 24/7','Cómo llegar'],
+      c3t: 'Seguinos', c3: ['@lavando.ar','instagram.com/lavando.ar','www.lavando.ar','+54 341 274-5374'],
       copy: '© 2026 LAVANDO · TODOS LOS DERECHOS RESERVADOS', made: 'HECHO EN ROSARIO ◆ ARGENTINA',
     },
   },
   pt: {
-    nav: { how: 'Como funciona', pricing: 'Preços', location: 'Localização' },
+    nav: { how: 'Como funciona', pricing: 'Preços', location: 'Localização', franchise: 'Franquia' },
     hero: {
       eyebrow: '◉ Lavanderia automática · Rosario · 24 h',
       line1pre: 'Sua roupa,', line1hi: 'limpa',
-      line2pre: 'em', line2hi: '30 minutos',
+      line2pre: 'em', line2hi: 'minutos',
       line3: 'Simples assim.',
-      lede: 'Reserve a máquina pelo celular, pague com um toque e entre quando quiser. Lavagem e secagem no centro de Rosario.',
+      lede: 'Venha quando quiser, pague com cartão ou Pix e sua roupa fica pronta em minutos. Lavagem e secagem no centro de Rosario.',
       cta1: 'Ver preços', cta2: 'Como funciona',
-      meta1: 'Aberto agora · 7 máquinas livres',
-      meta2: '⏱ Lavagem 30 min · Secagem 25 min',
     },
-    marquee: ['ABERTO 24/7','★','PAGAMENTO DIGITAL','★','ROSARIO CENTRO','★',"LAVAGEM EM 30'",'★','WI-FI','★','MÁQUINAS HE','★','DETERGENTE INCLUÍDO','★'],
+    marquee: ['ABERTO 24/7','★','PAGAMENTO DIGITAL','★','ROSARIO CENTRO','★','LAVAGEM RÁPIDA','★','WI-FI','★','MÁQUINAS INDUSTRIALES','★','DETERGENTE INCLUÍDO','★'],
     como: {
       eyebrow: '◉ EM 3 PASSOS · SEM COMPLICAÇÃO',
       h2a: 'Simples como', h2b: 'colocar uma', h2c: 'moeda.', h2d: 'Mas sem moeda.',
-      p: 'Tudo pelo celular. Sem fila, sem dinheiro, sem esperar. Você decide quando.',
-      s1t: 'Escolhe o serviço', s1p: 'Consulta disponibilidade, escolhe lavagem ou secagem e paga com cartão ou Pix. Recebe um código na hora.',
+      p: 'Sem fila, sem dinheiro, sem esperar. Você decide quando vir.',
+      s1t: 'Escolhe o serviço', s1p: 'Escolhe lavagem ou secagem, paga com cartão ou Pix e recebe o código para começar na hora.',
       s2t: 'Carrega a máquina', s2p: 'Vai ao local, coloca a roupa, insere o código e a máquina começa sozinha. Sabão e amaciante incluídos.',
-      s3t: 'Relaxa', s3p: '30 minutos de lavagem. Ar-condicionado e espaço confortável disponível. Te avisamos quando a roupa está pronta.',
+      s3t: 'Relaxa', s3p: 'Em minutos sua roupa fica pronta. Ar-condicionado e espaço confortável disponível.',
     },
     tarifas: {
       eyebrow: '◉ PREÇOS CLAROS · SEM SURPRESAS',
       h2: 'Preços que se entendem.', p: 'Paga por máquina, não por quilo. Sabão e amaciante sempre incluídos.',
-      t1tag: 'Só lavagem', t1h: 'Lavarroupas', t1li: ['30 minutos · Programa HE','Até 8 quilos','Sabão incluído'],
-      t2tag: '★ O mais escolhido', t2h: 'Lavagem + secagem', t2li: ['Lavagem HE de 30 minutos','Secagem de 25 minutos','Sabão e amaciante'],
+      t1tag: 'Só lavagem', t1h: 'Lavarroupas', t1li: ['Programa HE','Até 8 quilos','Sabão incluído'],
+      t2tag: '★ O mais escolhido', t2h: 'Lavagem + secagem', t2li: ['Lavagem HE','Secagem completa','Sabão e amaciante'],
     },
     pausa: {
       eyebrow: '◉ ENQUANTO ISSO',
       h3a: 'Não é só', h3b: 'lavanderia.', h3c: 'É', h3d: 'sua pausa',
-      p: 'Esses 30 minutos são seus. Relaxa, responde mensagens, lê um pouco. Quando chegar o aviso, sua roupa já está pronta.',
+      p: 'Esse tempo é seu. Relaxa, responde mensagens, lê um pouco. Quando sua roupa estiver pronta, te avisamos.',
       amenity: 'Ar-condicionado',
       photoLabel: 'FOTO · LAVANDERIA',
     },
-    avail: {
-      eyebrow: '◉ DISPONIBILIDADE EM TEMPO REAL',
-      h2: 'Sabes quando\ntem vaga.',
-      p: 'Consulte o estado das máquinas antes de vir. Veja quais estão livres e planeje sua visita sem surpresas.',
-      machinesLbl: 'Máquinas ao vivo', live: '● AO VIVO', free: 'LIVRE', busy: 'OCUPADA',
-      phoneGreeting: '◉ ROSARIO · CENTRO', phoneTitle: 'Oi, Sofi 👋', phoneTitle2: 'o que lavamos hoje?',
-    },
     ubi: {
       eyebrow: '◉ NO CENTRO DE ROSARIO', h2a: 'Estamos pertinho', h2b: 'de você.',
-      liveTag: 'AO VIVO · 7 LIVRES', corner: 'CÓRDOBA & MORENO · CENTRO',
+      liveTag: 'AO VIVO · CENTRO', corner: 'ZEBALLOS 1530 · CENTRO',
       h3a: 'Lavando', h3b: 'Rosario Centro',
-      dirLbl: 'Endereço', dirVal1: 'Córdoba 1234', dirVal2: 'Rosario, Santa Fe',
+      dirLbl: 'Endereço', dirVal1: 'Zeballos 1530', dirVal2: 'Rosario, Santa Fe',
       hoursLbl: 'Horário', hoursVal: '24 horas', hoursSub: 'Todos os dias do ano',
-      wsLbl: 'Whatsapp', wsVal: '+54 341 555 0123', btn: 'Como chegar →',
+      wsLbl: 'Whatsapp', wsVal: '+54 341 274-5374', btn: 'Como chegar →',
     },
     faq: {
       eyebrow: '◉ DÚVIDAS FREQUENTES', h2a: 'Tudo que você quer', h2b: 'saber.',
       items: [
         { q: 'Preciso levar sabão?', a: 'Não. Sabão, amaciante e tudo o necessário está incluído no preço. Se preferir seu próprio produto, pode trazer.' },
-        { q: 'Quanta roupa cabe numa máquina?', a: 'Até 8 quilos por máquina, o equivalente a duas cargas de uma lavadora doméstica. Suficiente para uma semana de roupas ou um edredom casal.' },
-        { q: 'E se eu não estiver quando terminar?', a: 'Te avisamos quando a roupa está pronta. Se não chegar a tempo, a roupa fica dentro até você vir buscar. Ninguém toca.' },
+        { q: 'Quanta roupa cabe numa máquina?', a: 'Até 8 quilos por máquina, o equivalente a duas cargas de uma lavadora doméstica.' },
+        { q: 'E se eu não estiver quando terminar?', a: 'A roupa fica dentro até você vir buscar. Ninguém toca.' },
         { q: 'Como faço o pagamento?', a: 'Com cartão de crédito, débito, Pix ou carteiras digitais. Tudo digital, não aceitamos dinheiro.' },
         { q: 'Posso lavar tênis ou edredons?', a: 'Sim. As máquinas são industriais (HE) e suportam edredons, mantas, travesseiros e tênis.' },
         { q: 'Têm serviço em domicílio?', a: 'Sim, na área central. Buscamos sua roupa, lavamos e secamos, e entregamos dobrada no mesmo dia.' },
       ],
     },
+    franquicia: {
+      eyebrow: '◉ OPORTUNIDADE DE NEGÓCIO',
+      h2a: 'Traga Lavando', h2b: 'para sua cidade.',
+      p: 'Lavando é uma lavanderia automática self-service que funciona 24/7 sem pessoal fixo. Máquinas industriais, pagamento digital e um modelo comprovado já em operação em Rosario.',
+      cards: [
+        { stat: '24/7', title: 'Sem pessoal', desc: 'O local opera sozinho, sem funcionários em turno.' },
+        { stat: '100%', title: 'Pagamento digital', desc: 'Sem manejo de dinheiro ou caixas registradoras.' },
+        { stat: '✓', title: 'Modelo comprovado', desc: 'Tecnologia, marca e suporte desde o primeiro dia.' },
+      ],
+      btn: '💬 Fale conosco para mais informação',
+    },
     footer: {
-      eyebrow: '◉ LAVANDO · ROSARIO', d1: 'Sua roupa,', d2: 'limpa', d3: "em 30'.",
+      eyebrow: '◉ LAVANDO · ROSARIO', d1: 'Sua roupa,', d2: 'limpa', d3: 'em minutos.',
       p: 'Lavanderia automática 24 horas no centro de Rosario. Máquinas que funcionam sempre.',
-      c1t: 'Serviços', c1: ['Lavagem','Secagem','Edredons','Domicílio','Passar roupa'],
-      c2t: 'Localização', c2: ['Córdoba 1234','Rosario, Santa Fe','Aberto 24/7','Como chegar'],
-      c3t: 'Siga-nos', c3: ['@lavando.ar','instagram.com/lavando.ar','www.lavando.ar','+54 341 555 0123'],
+      c1t: 'Serviços', c1: ['Lavagem','Secagem','Edredons','Domicílio'],
+      c2t: 'Localização', c2: ['Zeballos 1530','Rosario, Santa Fe','Aberto 24/7','Como chegar'],
+      c3t: 'Siga-nos', c3: ['@lavando.ar','instagram.com/lavando.ar','www.lavando.ar','+54 341 274-5374'],
       copy: '© 2026 LAVANDO · TODOS OS DIREITOS RESERVADOS', made: 'FEITO EM ROSARIO ◆ ARGENTINA',
     },
   },
   en: {
-    nav: { how: 'How it works', pricing: 'Pricing', location: 'Location' },
+    nav: { how: 'How it works', pricing: 'Pricing', location: 'Location', franchise: 'Franchise' },
     hero: {
       eyebrow: '◉ Automated laundromat · Rosario · 24 h',
       line1pre: 'Your clothes,', line1hi: 'clean',
-      line2pre: 'in', line2hi: '30 minutes',
+      line2pre: 'in', line2hi: 'minutes',
       line3: 'No hassle.',
-      lede: 'Book a machine from your phone, pay with a tap, and walk in whenever you want. Wash and dry in the heart of Rosario.',
+      lede: 'Walk in whenever you want, pay with card and your clothes are ready in minutes. Wash and dry in the heart of Rosario.',
       cta1: 'See pricing', cta2: 'How it works',
-      meta1: 'Open now · 7 machines free',
-      meta2: '⏱ Wash 30 min · Dry 25 min',
     },
-    marquee: ['OPEN 24/7','★','DIGITAL PAYMENT','★','ROSARIO CENTRO','★',"WASH IN 30'",'★','WI-FI','★','HE MACHINES','★','DETERGENT INCLUDED','★'],
+    marquee: ['OPEN 24/7','★','DIGITAL PAYMENT','★','ROSARIO CENTRO','★','FAST WASH','★','WI-FI','★','HE MACHINES','★','DETERGENT INCLUDED','★'],
     como: {
       eyebrow: '◉ 3 STEPS · NO HASSLE',
       h2a: 'As easy as', h2b: 'putting in a', h2c: 'coin.', h2d: 'But without a coin.',
-      p: 'Everything from your phone. No lines, no cash, no waiting. You decide when.',
-      s1t: 'Choose your service', s1p: 'Check availability, choose wash or dry, pay with card or digital wallet. Your code arrives instantly.',
+      p: 'No lines, no cash, no waiting. You decide when to come.',
+      s1t: 'Choose your service', s1p: 'Choose wash or dry, pay with card or digital wallet, and get your code to start instantly.',
       s2t: 'Load the machine', s2p: 'Come to the store, load your clothes, enter your code and the machine starts on its own. Detergent and softener included.',
-      s3t: 'Kick back', s3p: '30 minutes of washing. Air conditioning and comfortable space available. We notify you when your clothes are ready.',
+      s3t: 'Kick back', s3p: 'Your clothes are ready in minutes. Air conditioning and comfortable space available.',
     },
     tarifas: {
       eyebrow: '◉ CLEAR PRICES · NO SURPRISES',
       h2: 'Pricing you can understand.', p: 'You pay per machine, not per kilo. Detergent and softener always included.',
-      t1tag: 'Wash only', t1h: 'Washer', t1li: ['30 minutes · HE program','Up to 8 kg','Detergent included'],
-      t2tag: '★ Most popular', t2h: 'Wash + dry', t2li: ['30-min HE wash','25-min dry','Detergent & softener'],
+      t1tag: 'Wash only', t1h: 'Washer', t1li: ['HE program','Up to 8 kg','Detergent included'],
+      t2tag: '★ Most popular', t2h: 'Wash + dry', t2li: ['HE wash','Full dry','Detergent & softener'],
     },
     pausa: {
       eyebrow: '◉ MEANWHILE',
       h3a: "It's not just", h3b: 'a laundromat.', h3c: "It's", h3d: 'your break',
-      p: 'Those 30 minutes are yours. Relax, catch up on messages, read for a bit. When the notification arrives, your clothes are ready.',
+      p: 'That time is yours. Relax, catch up on messages, read for a bit. We notify you when your clothes are ready.',
       amenity: 'Air conditioning',
       photoLabel: 'PHOTO · LAUNDROMAT',
     },
-    avail: {
-      eyebrow: '◉ LIVE AVAILABILITY',
-      h2: 'Know when\nthere\'s space.',
-      p: 'Check machine status before you come. See which ones are free and plan your visit without surprises.',
-      machinesLbl: 'Machines live', live: '● LIVE', free: 'FREE', busy: 'BUSY',
-      phoneGreeting: '◉ ROSARIO · CENTRO', phoneTitle: 'Hey, Sofi 👋', phoneTitle2: 'what are we washing?',
-    },
     ubi: {
       eyebrow: '◉ RIGHT IN ROSARIO', h2a: "We're around", h2b: 'the corner.',
-      liveTag: 'LIVE · 7 FREE', corner: 'CÓRDOBA & MORENO · CENTRO',
+      liveTag: 'LIVE · CENTRO', corner: 'ZEBALLOS 1530 · CENTRO',
       h3a: 'Lavando', h3b: 'Rosario Centro',
-      dirLbl: 'Address', dirVal1: 'Córdoba 1234', dirVal2: 'Rosario, Santa Fe',
+      dirLbl: 'Address', dirVal1: 'Zeballos 1530', dirVal2: 'Rosario, Santa Fe',
       hoursLbl: 'Hours', hoursVal: '24 hours', hoursSub: 'Every day of the year',
-      wsLbl: 'Whatsapp', wsVal: '+54 341 555 0123', btn: 'Get directions →',
+      wsLbl: 'Whatsapp', wsVal: '+54 341 274-5374', btn: 'Get directions →',
     },
     faq: {
       eyebrow: '◉ FREQUENTLY ASKED', h2a: 'Everything you want', h2b: 'to know.',
       items: [
         { q: 'Do I need to bring detergent?', a: 'No. Detergent, softener, and everything needed is included in the price. If you prefer your own product, you can bring it.' },
-        { q: 'How much clothes fit in one machine?', a: "Up to 8 kg per machine, roughly two standard home laundry loads. Enough for a week's clothes for one person or a queen-size duvet." },
-        { q: "What if I'm not there when it finishes?", a: "We notify you when your clothes are ready. If you're late, your clothes stay inside until you come. Nobody touches them." },
+        { q: 'How much clothes fit in one machine?', a: "Up to 8 kg per machine, roughly two standard home laundry loads." },
+        { q: "What if I'm not there when it finishes?", a: "Your clothes stay inside until you come. Nobody touches them." },
         { q: 'How do I pay?', a: 'With credit card, debit card, or digital wallets. Everything digital — no cash accepted.' },
         { q: 'Can I wash sneakers or duvets?', a: 'Yes. The machines are industrial (HE) and handle duvets, blankets, pillows, and sneakers.' },
         { q: 'Do you offer home pickup?', a: 'Yes, in the downtown area. We pick up your clothes, wash and dry them, and deliver them folded the same day.' },
       ],
     },
+    franquicia: {
+      eyebrow: '◉ BUSINESS OPPORTUNITY',
+      h2a: 'Bring Lavando', h2b: 'to your city.',
+      p: 'Lavando is a self-service automated laundromat running 24/7 with no fixed staff. Industrial machines, digital payments, and a proven model already operating in Rosario.',
+      cards: [
+        { stat: '24/7', title: 'No staff needed', desc: 'The store runs itself, no employees on shift.' },
+        { stat: '100%', title: 'Digital payments', desc: 'No cash handling or cash registers.' },
+        { stat: '✓', title: 'Proven model', desc: 'Technology, brand, and support from day one.' },
+      ],
+      btn: '💬 Contact us for more information',
+    },
     footer: {
-      eyebrow: '◉ LAVANDO · ROSARIO', d1: 'Your clothes,', d2: 'clean', d3: "in 30'.",
+      eyebrow: '◉ LAVANDO · ROSARIO', d1: 'Your clothes,', d2: 'clean', d3: 'in minutes.',
       p: '24-hour automated laundromat in the heart of Rosario. Machines that always work.',
-      c1t: 'Services', c1: ['Wash','Dry','Duvets','Home delivery','Ironing'],
-      c2t: 'Location', c2: ['Córdoba 1234','Rosario, Santa Fe','Open 24/7','Get directions'],
-      c3t: 'Follow us', c3: ['@lavando.ar','instagram.com/lavando.ar','www.lavando.ar','+54 341 555 0123'],
+      c1t: 'Services', c1: ['Wash','Dry','Duvets','Home delivery'],
+      c2t: 'Location', c2: ['Zeballos 1530','Rosario, Santa Fe','Open 24/7','Get directions'],
+      c3t: 'Follow us', c3: ['@lavando.ar','instagram.com/lavando.ar','www.lavando.ar','+54 341 274-5374'],
       copy: '© 2026 LAVANDO · ALL RIGHTS RESERVED', made: 'MADE IN ROSARIO ◆ ARGENTINA',
     },
   },
@@ -218,28 +224,6 @@ const LangContext = createContext({ lang: 'es', setLang: () => {} });
 // ===== APP =====
 function App() {
   const [lang, setLang] = useState('es');
-  const [machineState, setMachineState] = useState({
-    M01: { status: 'free', time: null },
-    M02: { status: 'busy', time: 18 },
-    M03: { status: 'free', time: null },
-    M04: { status: 'busy', time: 7 },
-  });
-
-  useEffect(() => {
-    const t = setInterval(() => {
-      setMachineState((s) => {
-        const out = { ...s };
-        for (const k in out) {
-          if (out[k].status === 'busy' && out[k].time > 0) {
-            out[k] = { ...out[k], time: out[k].time - 1 };
-            if (out[k].time === 0) out[k] = { status: 'free', time: null };
-          }
-        }
-        return out;
-      });
-    }, 4000);
-    return () => clearInterval(t);
-  }, []);
 
   return (
     <LangContext.Provider value={{ lang, setLang }}>
@@ -249,8 +233,8 @@ function App() {
       <ComoFunciona />
       <Tarifas />
       <PausaSection />
-      <AvailSection machines={machineState} />
       <Ubicacion />
+      <Franquicia />
       <FAQ />
       <Footer />
       <Tweaks />
@@ -349,14 +333,14 @@ function Nav() {
             <span></span><span></span><span></span>
           </button>
           <a href="#" className="nav-logo" onClick={close}>
-            <span className="dot"></span>
-            Lavando
+            <img src="assets/logo-lavando.jpeg" alt="Lavando" style={{ height: 46, width: 'auto', display: 'block' }} />
           </a>
         </div>
         <div className="nav-links">
           <a href="#como">{t.how}</a>
           <a href="#tarifas">{t.pricing}</a>
           <a href="#ubicacion">{t.location}</a>
+          <a href="#franquicia">{t.franchise}</a>
         </div>
         <div className="nav-right">
           <LangSwitcher />
@@ -368,6 +352,7 @@ function Nav() {
           <a href="#como" onClick={close}>{t.how}</a>
           <a href="#tarifas" onClick={close}>{t.pricing}</a>
           <a href="#ubicacion" onClick={close}>{t.location}</a>
+          <a href="#franquicia" onClick={close}>{t.franchise}</a>
         </div>
       )}
     </nav>
@@ -396,10 +381,6 @@ function Hero() {
               <a href="#tarifas" className="btn btn-primary btn-lg">{t.cta1}</a>
               <a href="#como" className="btn btn-ghost btn-lg">{t.cta2}</a>
             </div>
-            <div className="hero-meta">
-              <div className="meta"><span className="pulse"></span>{t.meta1}</div>
-              <div className="meta">{t.meta2}</div>
-            </div>
           </div>
 
           <div className="hero-visual">
@@ -413,8 +394,7 @@ function Hero() {
               </div>
             </div>
             <div className="timer-chip">
-              <div><div className="num">30</div></div>
-              <div className="lbl">MINUTOS<br />ROPA LISTA</div>
+              <div className="lbl">✓ ROPA<br />EN MINUTOS</div>
             </div>
           </div>
         </div>
@@ -497,7 +477,7 @@ function Tarifas() {
           <div className="tarifa">
             <span className="tag">{t.t1tag}</span>
             <h3>{t.t1h}</h3>
-            <div className="price"><span className="currency">$</span>12.000<span className="unit">/ ciclo</span></div>
+            <div className="price"><span className="currency">$</span>8.000<span className="unit">/ ciclo</span></div>
             <ul>{t.t1li.map((li, i) => <li key={i}>{li}</li>)}</ul>
           </div>
           <div className="tarifa featured">
@@ -512,7 +492,7 @@ function Tarifas() {
   );
 }
 
-// ===== PAUSA (antes CafeEspera) =====
+// ===== PAUSA =====
 function PausaSection() {
   const { lang } = useContext(LangContext);
   const t = T[lang].pausa;
@@ -551,77 +531,11 @@ function PausaSection() {
   );
 }
 
-// ===== DISPONIBILIDAD (antes AppSection) =====
-function AvailSection({ machines }) {
-  const { lang } = useContext(LangContext);
-  const t = T[lang].avail;
-  const [h2line1, h2line2] = t.h2.split('\n');
-  return (
-    <section className="section app-section" id="app">
-      <div className="container">
-        <div className="app-grid">
-          <div>
-            <div className="eyebrow">{t.eyebrow}</div>
-            <h2 className="display" style={{ color: 'var(--tinta)' }}>
-              {h2line1}<br />
-              <span style={{ color: 'var(--magenta)' }}>{h2line2}</span>
-            </h2>
-            <p style={{ fontSize: 19, maxWidth: 480 }}>{t.p}</p>
-          </div>
-          <PhoneMock machines={machines} t={t} />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function PhoneMock({ machines, t }) {
-  return (
-    <div className="phone-wrap">
-      <div className="phone">
-        <div className="phone-notch"></div>
-        <div className="phone-screen">
-          <div className="phone-status">
-            <span>9:41</span>
-            <span>●●● 100%</span>
-          </div>
-          <div className="phone-content">
-            <div>
-              <div className="phone-greeting">{t.phoneGreeting}</div>
-              <h4 className="phone-title" style={{ marginTop: 8 }}>
-                {t.phoneTitle}<br />{t.phoneTitle2}
-              </h4>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--tinta-soft)' }}>
-                {t.machinesLbl}
-              </span>
-              <span style={{ background: 'var(--lima)', border: '1.5px solid var(--tinta)', borderRadius: 999, padding: '3px 9px', fontSize: 10, fontWeight: 700 }}>
-                {t.live}
-              </span>
-            </div>
-            <div className="phone-machines">
-              {Object.entries(machines).map(([id, m]) => (
-                <div key={id} className={'phone-machine ' + m.status}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span style={{ fontWeight: 700, fontSize: 11 }}>{id}</span>
-                    <span className="stat"><span className="dot"></span>{m.status === 'free' ? t.free : t.busy}</span>
-                  </div>
-                  <div className="mid">{m.status === 'busy' ? `${m.time}'` : 'OK'}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ===== UBICACION =====
 function Ubicacion() {
   const { lang } = useContext(LangContext);
   const t = T[lang].ubi;
+  const mapsUrl = 'https://maps.google.com/?q=Zeballos+1530+Rosario+Santa+Fe+Argentina';
   return (
     <section className="section ubicacion-section" id="ubicacion">
       <div className="container">
@@ -656,9 +570,14 @@ function Ubicacion() {
             </div>
             <div className="row">
               <div className="icn">📱</div>
-              <div><div className="lbl">{t.wsLbl}</div><div className="val">{t.wsVal}</div></div>
+              <div>
+                <div className="lbl">{t.wsLbl}</div>
+                <div className="val">
+                  <a href="https://wa.me/543412745374" target="_blank" rel="noopener" style={{ color: 'white', textDecoration: 'none' }}>{t.wsVal}</a>
+                </div>
+              </div>
             </div>
-            <a href="#" className="btn" style={{ background: 'var(--lima)', color: 'var(--tinta)', marginTop: 8, boxShadow: '4px 4px 0 0 var(--tinta)' }}>{t.btn}</a>
+            <a href={mapsUrl} target="_blank" rel="noopener" className="btn" style={{ background: 'var(--lima)', color: 'var(--tinta)', marginTop: 8, boxShadow: '4px 4px 0 0 var(--tinta)' }}>{t.btn}</a>
           </div>
         </div>
       </div>
@@ -695,10 +614,44 @@ function FAQ() {
   );
 }
 
+// ===== FRANQUICIA =====
+function Franquicia() {
+  const { lang } = useContext(LangContext);
+  const t = T[lang].franquicia;
+  const statColors = ['var(--lima)', 'var(--magenta)', 'var(--celeste)'];
+  const waUrl = `https://wa.me/543412745374?text=${encodeURIComponent('Hola! Quiero información sobre la franquicia Lavando.')}`;
+  return (
+    <section className="section franquicia-section" id="franquicia">
+      <div className="container">
+        <div className="section-header">
+          <div className="eyebrow" style={{ color: 'var(--lima)' }}>{t.eyebrow}</div>
+          <h2 className="display" style={{ color: 'white', margin: '16px 0 16px' }}>
+            {t.h2a}<br /><span style={{ color: 'var(--magenta)' }}>{t.h2b}</span>
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,.85)', fontSize: 19, maxWidth: 620, margin: 0 }}>{t.p}</p>
+        </div>
+        <div className="franquicia-cards">
+          {t.cards.map((card, i) => (
+            <div key={i} className="franquicia-card">
+              <div className="franquicia-stat" style={{ color: statColors[i] }}>{card.stat}</div>
+              <div className="franquicia-title">{card.title}</div>
+              <p className="franquicia-desc">{card.desc}</p>
+            </div>
+          ))}
+        </div>
+        <a href={waUrl} className="btn btn-primary btn-lg" target="_blank" rel="noopener">
+          {t.btn}
+        </a>
+      </div>
+    </section>
+  );
+}
+
 // ===== FOOTER =====
 function Footer() {
   const { lang } = useContext(LangContext);
   const t = T[lang].footer;
+  const mapsUrl = 'https://maps.google.com/?q=Zeballos+1530+Rosario+Santa+Fe+Argentina';
   return (
     <footer className="footer">
       <div className="container">
@@ -718,7 +671,7 @@ function Footer() {
             <h4>{t.c2t}</h4>
             <ul>
               {t.c2.slice(0,3).map((item, i) => <li key={i}>{item}</li>)}
-              <li><a href="#">{t.c2[3]}</a></li>
+              <li><a href={mapsUrl} target="_blank" rel="noopener">{t.c2[3]}</a></li>
             </ul>
           </div>
           <div>
@@ -727,8 +680,8 @@ function Footer() {
           </div>
         </div>
         <div className="footer-bottom">
+          <span>Zeballos 1530, Rosario, Santa Fe · +54 341 274-5374</span>
           <span>{t.copy}</span>
-          <span>{t.made}</span>
         </div>
       </div>
     </footer>
