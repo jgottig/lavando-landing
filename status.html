@@ -87,9 +87,9 @@ html, body {
    HEADER
 ============================== */
 .header {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 0 40px;
   border-bottom: 1.5px solid var(--border);
   background: var(--surface);
@@ -161,7 +161,7 @@ html, body {
 }
 .hstat-val {
   font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -742,37 +742,40 @@ html, body {
 
   <!-- HEADER -->
   <header class="header">
+    <!-- Izquierda: logo -->
     <div class="header-logo">
       <img src="assets/logo-lavando.jpeg" alt="Lavando" />
       <div class="h-sep"></div>
       <div class="header-subtitle">Estado de Máquinas</div>
     </div>
-    <div style="display:flex;align-items:center;gap:20px;margin-left:auto;margin-right:28px;">
+    <!-- Centro: stats -->
+    <div class="header-stats">
+      <div class="hstat">
+        <div class="hstat-val" id="s-free" style="color:var(--c-free)">–</div>
+        <div class="hstat-lbl">Disponibles</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val" id="s-busy" style="color:var(--c-dryer)">–</div>
+        <div class="hstat-lbl">En uso</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val" id="s-wash" style="color:var(--c-washer)">–</div>
+        <div class="hstat-lbl">Lavadoras</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val" id="s-dry" style="color:var(--c-dryer)">–</div>
+        <div class="hstat-lbl">Secadoras</div>
+      </div>
+    </div>
+    <!-- Derecha: en vivo + reloj -->
+    <div style="display:flex;align-items:center;gap:20px;justify-content:flex-end;">
       <div class="header-live">
         <div class="live-dot"></div>
         En vivo · Zeballos 1530
       </div>
       <div class="h-sep"></div>
-      <div class="header-stats">
-        <div class="hstat">
-          <div class="hstat-val" id="s-free" style="color:var(--c-free)">–</div>
-          <div class="hstat-lbl">Disponibles</div>
-        </div>
-        <div class="hstat">
-          <div class="hstat-val" id="s-busy" style="color:var(--c-dryer)">–</div>
-          <div class="hstat-lbl">En uso</div>
-        </div>
-        <div class="hstat">
-          <div class="hstat-val" id="s-wash" style="color:var(--c-washer)">–</div>
-          <div class="hstat-lbl">Lavadoras</div>
-        </div>
-        <div class="hstat">
-          <div class="hstat-val" id="s-dry" style="color:var(--c-dryer)">–</div>
-          <div class="hstat-lbl">Secadoras</div>
-        </div>
-      </div>
+      <div class="header-clock" id="clock">00:00</div>
     </div>
-    <div class="header-clock" id="clock">00:00</div>
   </header>
 
   <!-- BODY -->
@@ -906,13 +909,14 @@ function dryerSVG(color, spinning) {
 }
 
 // =============================================================
-//  PUBLICACIONES (video desde API)
-//  Consulta recurso=publicacoes, filtra por activo + período vigente
-//  y construye el player con los YouTube IDs resultantes.
-//  YOUTUBE_FALLBACK se usa si la API no devuelve nada.
+//  PUBLICACIONES (video desde API — YouTube IFrame API)
+//  Usa YT.Player + loadPlaylist + setLoop para rotar videos
+//  de forma confiable. Fallback hardcodeado si la API no devuelve nada.
 // =============================================================
 const YOUTUBE_FALLBACK = 'https://www.youtube.com/watch?v=OO2kPK5-qno';
-const PUBS_POLL_MS = 60000; // re-chequea publicaciones cada minuto
+const PUBS_POLL_MS = 60000;
+
+let ytPlayer = null;
 
 function getYouTubeId(url) {
   if (!url) return null;
@@ -920,8 +924,57 @@ function getYouTubeId(url) {
   return m ? m[1] : null;
 }
 
+// Carga la YouTube IFrame API una sola vez; devuelve promesa que resuelve cuando está lista.
+function ensureYouTubeAPI() {
+  return new Promise(resolve => {
+    if (window.YT && window.YT.Player) { resolve(); return; }
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) prev(); resolve(); };
+    if (!document.querySelector('script[src*="youtube.com/iframe_api"]')) {
+      const s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(s);
+    }
+  });
+}
+
+function buildVideoPanelFromIds(ids) {
+  const panel = document.getElementById('video-panel');
+  if (!ids || ids.length === 0) { panel.classList.add('hidden'); return; }
+  panel.classList.remove('hidden');
+
+  const key = ids.join(',');
+  if (panel.dataset.key === key) return; // playlist sin cambios, no interrumpir
+  panel.dataset.key = key;
+
+  // Si el player ya existe, solo cambiar el playlist
+  if (ytPlayer && ytPlayer.loadPlaylist) {
+    ytPlayer.loadPlaylist({ playlist: ids, index: 0 });
+    ytPlayer.setLoop(true);
+    return;
+  }
+
+  // Primera vez: inyectar el div y crear el player
+  panel.innerHTML = '<div id="yt-player" style="position:absolute;inset:0;width:100%;height:100%;"></div>';
+
+  ensureYouTubeAPI().then(() => {
+    ytPlayer = new YT.Player('yt-player', {
+      playerVars: { autoplay: 1, mute: 0, controls: 1, rel: 0, modestbranding: 1 },
+      events: {
+        onReady(e) {
+          e.target.loadPlaylist({ playlist: ids, index: 0 });
+          e.target.setLoop(true);
+        },
+        onError() {
+          // Si un video falla, saltar al siguiente
+          if (ytPlayer) ytPlayer.nextVideo();
+        }
+      }
+    });
+  });
+}
+
 function isPublicacionActiva(p) {
-  // Acepta nombres de columna en español (activo) y portugués (ativo)
   const activo = p.ativo ?? p.activo ?? true;
   if (!activo) return false;
   const ahora  = new Date();
@@ -930,19 +983,6 @@ function isPublicacionActiva(p) {
   if (inicio && new Date(inicio) > ahora) return false;
   if (fin    && new Date(fin)    < ahora) return false;
   return true;
-}
-
-function buildVideoPanelFromIds(ids) {
-  const panel = document.getElementById('video-panel');
-  if (!ids || ids.length === 0) { panel.classList.add('hidden'); return; }
-  panel.classList.remove('hidden');
-  const first    = ids[0];
-  const playlist = ids.join(',');
-  const src = `https://www.youtube.com/embed/${first}?autoplay=1&mute=0&loop=1&playlist=${playlist}&controls=1&rel=0&modestbranding=1`;
-  // No reconstruir el iframe si el playlist no cambió (evita cortar la reproducción)
-  if (panel.dataset.src === src) return;
-  panel.dataset.src = src;
-  panel.innerHTML = `<iframe src="${src}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
 }
 
 async function fetchPublicaciones() {
@@ -954,7 +994,6 @@ async function fetchPublicaciones() {
 
     if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
       const activas = json.dados.filter(isPublicacionActiva);
-      // Busca URL en columnas posibles: url, link, url_video
       const ids = activas
         .map(p => getYouTubeId(p.url || p.link || p.url_video || ''))
         .filter(Boolean);
@@ -966,7 +1005,6 @@ async function fetchPublicaciones() {
     }
   } catch (err) {
     console.error('[Lavando Publicaciones]', err);
-    // En error: usar fallback solo si el panel todavía no tiene video
     const panel = document.getElementById('video-panel');
     if (panel.classList.contains('hidden')) {
       const fbId = getYouTubeId(YOUTUBE_FALLBACK);
@@ -1376,10 +1414,12 @@ function updateFsBtn() {
 // Mostrar idLocal en el overlay para confirmar configuración
 document.getElementById('lo-local').textContent = `Local ${ID_LOCAL}`;
 
-// Al tocar el overlay: fullscreen + ocultar overlay
+// Al tocar el overlay: fullscreen + ocultar overlay + asegurar reproducción de video
 overlay.addEventListener('click', () => {
   enterFullscreen();
   overlay.classList.add('hidden');
+  // Si el autoplay fue bloqueado por el browser antes del gesto, lo activamos aquí
+  if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
 });
 
 fsBtn.addEventListener('click', () => {
