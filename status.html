@@ -78,7 +78,7 @@ html, body {
 
 .body {
   display: grid;
-  grid-template-columns: 1fr 390px;
+  grid-template-columns: 1fr 650px;
   min-height: 0;
   overflow: hidden;
 }
@@ -499,7 +499,8 @@ html, body {
   position: absolute;
   inset: 0;
   width: 100%; height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
 }
 
 .slide-inner { position: relative; z-index: 2; color: #fff; }
@@ -975,13 +976,8 @@ function buildVideoPanelFromIds(ids) {
 }
 
 function isPublicacionActiva(p) {
-  const activo = p.ativo ?? p.activo ?? true;
-  if (!activo) return false;
-  const ahora  = new Date();
-  const inicio = p.dt_inicio  || p.fecha_inicio || p.data_inicio || null;
-  const fin    = p.dt_fin     || p.fecha_fin    || p.data_fim    || null;
-  if (inicio && new Date(inicio) > ahora) return false;
-  if (fin    && new Date(fin)    < ahora) return false;
+  if (Number(p.Status) !== 1) return false;
+  if (p.DHValidade && new Date(p.DHValidade) < new Date()) return false;
   return true;
 }
 
@@ -994,11 +990,21 @@ async function fetchPublicaciones() {
 
     if (json.sucesso && Array.isArray(json.dados) && json.dados.length > 0) {
       const activas = json.dados.filter(isPublicacionActiva);
-      const ids = activas
-        .map(p => getYouTubeId(p.url || p.link || p.url_video || ''))
-        .filter(Boolean);
-      const fbId = getYouTubeId(YOUTUBE_FALLBACK);
-      buildVideoPanelFromIds(ids.length > 0 ? ids : (fbId ? [fbId] : []));
+
+      // Videos — ordenados por Ord asc
+      const videos   = activas
+        .filter(p => p.Tipo?.toLowerCase() === 'video')
+        .sort((a, b) => (a.Ord || 0) - (b.Ord || 0));
+      const videoIds = videos.map(p => getYouTubeId(p.link || '')).filter(Boolean);
+      const fbId     = getYouTubeId(YOUTUBE_FALLBACK);
+      buildVideoPanelFromIds(videoIds.length > 0 ? videoIds : (fbId ? [fbId] : []));
+
+      // Imágenes — reemplazan el carousel, ordenadas por Ord asc
+      const imagenes = activas
+        .filter(p => p.Tipo?.toLowerCase() === 'imagem')
+        .sort((a, b) => (a.Ord || 0) - (b.Ord || 0));
+      if (imagenes.length > 0) buildSlidesFromImages(imagenes);
+
     } else {
       const fbId = getYouTubeId(YOUTUBE_FALLBACK);
       buildVideoPanelFromIds(fbId ? [fbId] : []);
@@ -1299,28 +1305,48 @@ function tickClock() {
 
 // =============================================================
 //  SLIDES
-//  To add real media:
-//    { type: 'video', src: 'assets/media/promo.mp4' }
-//    { type: 'image', src: 'assets/media/foto.jpg' }
+//  slideItems es la fuente de verdad: se inicia con slides estáticos
+//  y se reemplaza con imágenes de la API cuando llegan.
+//  Cada item tiene durMs (milisegundos de display); el avance usa
+//  setTimeout por slide en lugar de setInterval fijo.
 // =============================================================
-const SLIDES = [
-  { cls: 'slide-magenta', icon: '🫧', label: 'Lavado profesional', title: 'Ropa limpia\nen minutos.', body: 'Detergente y suavizante incluidos en cada ciclo.' },
+const SLIDES_STATIC = [
+  { cls: 'slide-magenta', icon: '🫧', label: 'Lavado profesional', title: 'Ropa limpia\nen minutos.',    body: 'Detergente y suavizante incluidos en cada ciclo.' },
   { cls: 'slide-azul',    icon: '💳', label: 'Pago digital',       title: 'Sin efectivo.\nSin vueltas.', body: 'MercadoPago, tarjeta de crédito, débito y billeteras digitales.' },
-  { cls: 'slide-dark',    icon: '❄️', label: 'Comodidad',          title: 'Esperá\nen calma.', body: 'Aire acondicionado y espacio cómodo mientras esperás.', titleColor: '#64ABDB' },
-  { cls: 'slide-lima',    icon: '🕐', label: 'Siempre abierto',    title: 'Las 24\nhoras.', body: 'Todos los días del año. Entrá cuando quieras.', titleColor: '#7FD43A' },
-  { cls: 'slide-magenta', icon: '📍', label: 'Encontranos',        title: 'Zeballos\n1530', body: 'Rosario, Santa Fe — en el corazón del centro.' },
+  { cls: 'slide-dark',    icon: '❄️', label: 'Comodidad',          title: 'Esperá\nen calma.',            body: 'Aire acondicionado y espacio cómodo mientras esperás.', titleColor: '#64ABDB' },
+  { cls: 'slide-lima',    icon: '🕐', label: 'Siempre abierto',    title: 'Las 24\nhoras.',               body: 'Todos los días del año. Entrá cuando quieras.', titleColor: '#7FD43A' },
+  { cls: 'slide-magenta', icon: '📍', label: 'Encontranos',        title: 'Zeballos\n1530',               body: 'Rosario, Santa Fe — en el corazón del centro.' },
 ];
-const SLIDE_MS = 9000;
-let curSlide = 0;
+const SLIDE_MS_DEFAULT = 9000;
 
+let slideItems = [];
+let curSlide   = 0;
+let slideTimer = null;
+
+// Inicia con slides estáticos (fallback mientras carga la API)
 function buildSlides() {
+  slideItems = SLIDES_STATIC.map(s => ({ ...s, durMs: SLIDE_MS_DEFAULT }));
+  renderSlideDOM();
+}
+
+// Reemplaza el carousel con imágenes de la API
+// tempomin está en minutos (ej: tempomin=1 → 60 s por imagen)
+function buildSlidesFromImages(imagenes) {
+  clearTimeout(slideTimer);
+  curSlide   = 0;
+  slideItems = imagenes.map(p => ({
+    type:  'image',
+    src:   p.link,
+    durMs: Math.max((p.tempomin || 1) * 60 * 1000, 5000),
+  }));
+  renderSlideDOM();
+}
+
+function renderSlideDOM() {
   const area = document.getElementById('media-area');
   const dots = document.getElementById('media-dots');
 
-  area.innerHTML = SLIDES.map((s, i) => {
-    if (s.type === 'video') {
-      return `<div class="slide ${i===0?'active':''}"><video src="${s.src}" autoplay muted loop playsinline></video></div>`;
-    }
+  area.innerHTML = slideItems.map((s, i) => {
     if (s.type === 'image') {
       return `<div class="slide ${i===0?'active':''}"><img src="${s.src}" alt=""/></div>`;
     }
@@ -1337,28 +1363,40 @@ function buildSlides() {
       </div>`;
   }).join('');
 
-  dots.innerHTML = SLIDES.map((_,i) =>
+  dots.innerHTML = slideItems.map((_,i) =>
     `<div class="mdot ${i===0?'active':''}"></div>`
   ).join('');
+
+  startProgress();
+  scheduleSlide();
+}
+
+function scheduleSlide() {
+  clearTimeout(slideTimer);
+  const dur = slideItems[curSlide]?.durMs || SLIDE_MS_DEFAULT;
+  slideTimer = setTimeout(advanceSlide, dur);
 }
 
 function advanceSlide() {
-  const slides = document.querySelectorAll('.slide');
-  const dots   = document.querySelectorAll('.mdot');
-  slides[curSlide].classList.remove('active');
-  dots[curSlide].classList.remove('active');
-  curSlide = (curSlide + 1) % SLIDES.length;
-  slides[curSlide].classList.add('active');
-  dots[curSlide].classList.add('active');
+  if (!slideItems.length) return;
+  const slides = document.querySelectorAll('#media-area .slide');
+  const dots   = document.querySelectorAll('#media-dots .mdot');
+  slides[curSlide]?.classList.remove('active');
+  dots[curSlide]?.classList.remove('active');
+  curSlide = (curSlide + 1) % slideItems.length;
+  slides[curSlide]?.classList.add('active');
+  dots[curSlide]?.classList.add('active');
   startProgress();
+  scheduleSlide();
 }
 
 function startProgress() {
+  const dur  = slideItems[curSlide]?.durMs || SLIDE_MS_DEFAULT;
   const fill = document.getElementById('slide-fill');
   fill.style.transition = 'none';
   fill.style.width = '0%';
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    fill.style.transition = `width ${SLIDE_MS}ms linear`;
+    fill.style.transition = `width ${dur}ms linear`;
     fill.style.width = '100%';
   }));
 }
@@ -1367,26 +1405,22 @@ function startProgress() {
 //  INIT
 // =============================================================
 function init() {
-  buildSlides();
-  renderMachines();   // muestra placeholders offline mientras carga
+  buildSlides();        // slides estáticos como placeholder
+  renderMachines();
   renderSummary();
   tickClock();
-  startProgress();
 
-  // Publicaciones (videos): carga inmediata y re-chequeo cada minuto
+  // Publicaciones: carga inmediata, re-chequeo cada minuto
   fetchPublicaciones();
   setInterval(fetchPublicaciones, PUBS_POLL_MS);
 
-  // Estado máquinas: primera carga inmediata, luego cada 5 segundos
+  // Estado máquinas: carga inmediata, luego cada 5 s
   fetchMachines();
   setInterval(fetchMachines, POLL_MS);
 
-  // Countdown local cada 1 segundo
   setInterval(localTick, TICK_MS);
-
-  // Reloj y slides
   setInterval(tickClock, 1000);
-  setInterval(advanceSlide, SLIDE_MS);
+  // slides se manejan con setTimeout por item (scheduleSlide dentro de renderSlideDOM)
 }
 
 // =============================================================
@@ -1411,14 +1445,36 @@ function updateFsBtn() {
   fsBtn.textContent = inFs ? '✕ Salir' : '⛶ Pantalla completa';
 }
 
-// Mostrar idLocal en el overlay para confirmar configuración
+// =============================================================
+//  WAKE LOCK — evita que el browser duerma/recargue por inactividad
+// =============================================================
+let wakeLock = null;
+async function requestWakeLock() {
+  if (!navigator.wakeLock) return;
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    // Se libera si la pestaña va a background; lo renovamos cuando vuelve
+    wakeLock.addEventListener('release', () => { wakeLock = null; });
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) requestWakeLock();
+});
+
+// =============================================================
+//  SESIÓN PERSISTENTE
+//  sessionStorage sobrevive recargas automáticas del browser.
+//  Si el usuario ya pasó el overlay, lo saltamos en la próxima recarga.
+// =============================================================
+const SESSION_KEY = 'lavando_launched';
+
 document.getElementById('lo-local').textContent = `Local ${ID_LOCAL}`;
 
-// Al tocar el overlay: fullscreen + ocultar overlay + asegurar reproducción de video
 overlay.addEventListener('click', () => {
   enterFullscreen();
   overlay.classList.add('hidden');
-  // Si el autoplay fue bloqueado por el browser antes del gesto, lo activamos aquí
+  sessionStorage.setItem(SESSION_KEY, '1');
+  requestWakeLock();
   if (ytPlayer && ytPlayer.playVideo) ytPlayer.playVideo();
 });
 
@@ -1429,6 +1485,13 @@ fsBtn.addEventListener('click', () => {
 
 document.addEventListener('fullscreenchange', updateFsBtn);
 document.addEventListener('webkitfullscreenchange', updateFsBtn);
+
+// Si la sesión ya estaba activa (recarga automática del browser), saltear overlay
+if (sessionStorage.getItem(SESSION_KEY)) {
+  overlay.classList.add('hidden');
+  enterFullscreen();   // funciona en algunos TVs tras recarga dentro de la misma sesión
+  requestWakeLock();
+}
 
 init();
 </script>
