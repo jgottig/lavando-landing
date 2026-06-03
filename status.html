@@ -111,11 +111,12 @@ html, body {
 }
 
 .header-subtitle {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 20px;
-  letter-spacing: .18em;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--text);
 }
 
 .header-live {
@@ -261,7 +262,7 @@ html, body {
   align-items: center;
   gap: 7px;
   font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: calc(14px * var(--col-scale, 1));
+  font-size: calc(21px * var(--col-scale, 1));
   font-weight: 800;
   letter-spacing: .04em;
   text-transform: uppercase;
@@ -362,7 +363,7 @@ html, body {
 
 .time-sub {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(17px * var(--col-scale, 1));
+  font-size: calc(22px * var(--col-scale, 1));
   font-weight: 800;
   letter-spacing: .1em;
   text-transform: uppercase;
@@ -405,7 +406,7 @@ html, body {
 
 .bar-pct {
   font-family: 'JetBrains Mono', monospace;
-  font-size: calc(17px * var(--col-scale, 1));
+  font-size: calc(22px * var(--col-scale, 1));
   font-weight: 800;
   color: var(--text);
   letter-spacing: .06em;
@@ -590,6 +591,7 @@ html, body {
 /* Badge DISPONIBLE dentro de la card (estado libre) */
 .badge-free-inline {
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   font-family: 'Bricolage Grotesque', sans-serif;
   font-size: calc(18px * var(--col-scale, 1));
@@ -1242,7 +1244,7 @@ function renderCard(m) {
     const subLabel = cls === 'finishing' ? '¡Casi lista!' : 'Min restantes';
     infoHtml = `
       ${cicloTag}
-      <div class="time-big">${minsLeft}<span style="font-size:20px;opacity:.5"> min</span></div>
+      <div class="time-big">${minsLeft}<span style="font-size:30px;opacity:.5"> min</span></div>
       <div class="time-sub">${subLabel}</div>
       <div class="bar-wrap">
         <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
