@@ -71,7 +71,7 @@ html, body {
 ============================== */
 .screen {
   display: grid;
-  grid-template-rows: 70px 1fr;
+  grid-template-rows: 100px 1fr;
   height: 100vh;
   width: 100vw;
 }
@@ -102,17 +102,17 @@ html, body {
   align-items: center;
   gap: 14px;
 }
-.header-logo img { height: 36px; width: auto; display: block; }
+.header-logo img { height: 54px; width: auto; display: block; }
 
 .h-sep {
-  width: 2px; height: 24px;
+  width: 2px; height: 40px;
   background: var(--border);
   border-radius: 2px;
 }
 
 .header-subtitle {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 20px;
   letter-spacing: .18em;
   text-transform: uppercase;
   color: var(--muted);
@@ -121,15 +121,15 @@ html, body {
 .header-live {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 20px;
   letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--c-free);
 }
 .live-dot {
-  width: 9px; height: 9px;
+  width: 14px; height: 14px;
   border-radius: 50%;
   background: var(--c-free);
   animation: pulse-live 1.6s ease-in-out infinite;
@@ -137,38 +137,38 @@ html, body {
 
 .header-clock {
   font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 36px;
+  font-size: 54px;
   font-weight: 800;
   letter-spacing: -0.045em;
   color: var(--text);
-  min-width: 110px;
+  min-width: 160px;
   text-align: right;
 }
 
 .header-stats {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .hstat {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 16px;
+  gap: 10px;
+  padding: 9px 20px;
   border-radius: 999px;
   background: rgba(20,19,43,.05);
   border: 1.5px solid var(--border);
 }
 .hstat-val {
   font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 36px;
+  font-size: 52px;
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
 }
 .hstat-lbl {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
+  font-size: 16px;
   letter-spacing: .07em;
   text-transform: uppercase;
   color: var(--muted);
@@ -413,7 +413,7 @@ html, body {
 
 /* Free big check */
 .free-check {
-  font-size: clamp(24px, 2.2vw, 34px);
+  font-size: clamp(24px, 2.2vw, 24px);
   line-height: 1;
   margin-top: 6px;
 }
@@ -587,12 +587,28 @@ html, body {
   margin-top: 2px;
 }
 
+/* Badge DISPONIBLE dentro de la card (estado libre) */
+.badge-free-inline {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 11px 24px;
+  border-radius: 999px;
+  background: var(--c-free);
+  color: #fff;
+  margin-bottom: 10px;
+}
+
 /* ==============================
    CICLO ID
 ============================== */
 .ciclo-id {
   font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: clamp(18px, 1.6vw, 26px);
+  font-size: clamp(22px, 2vw, 34px);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -1212,10 +1228,11 @@ function renderCard(m) {
       <div class="offline-msg" style="color:rgba(200,50,50,.7)">⚠ Error en máquina</div>`;
 
   } else if (m.status === 'free') {
-    badgeLabel = 'DISPONIBLE';
+    badgeLabel = '';
     infoHtml = `
-      ${cicloTag}
-      <div class="free-check">✓</div>`;
+      <div class="badge-free-inline">DISPONIBLE</div>
+      <div class="ciclo-id" style="font-size:clamp(22px,2vw,34px)">${m.idCiclo ? 'Ciclo #' + m.idCiclo : ''}</div>
+      <div class="free-check">Terminado</div>`;
 
   } else {
     badgeLabel = cls === 'finishing' ? 'TERMINANDO' : 'EN USO';
@@ -1234,11 +1251,15 @@ function renderCard(m) {
       ${renderSubcycles(m)}`;
   }
 
+  const topBadge = badgeLabel
+    ? `<div class="badge">${badgeLabel}</div>`
+    : '';
+
   return `
     <div class="card ${cls}">
       <div class="card-top">
         <div class="card-num">${m.type === 'washer' ? 'Lavadora' : 'Secadora'} ${m.idMaqLoc}</div>
-        <div class="badge">${badgeLabel}</div>
+        ${topBadge}
       </div>
       <div class="card-center">
         ${svgStr}
